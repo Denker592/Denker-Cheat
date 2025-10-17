@@ -1,4 +1,4 @@
-local Version = "5.23"
+local Version = "5.23 beta"
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
