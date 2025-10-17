@@ -1,0 +1,1346 @@
+local Version = "5.23"
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+
+-- Создаем основной GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DenkerChetGUI"
+ScreenGui.Parent = player.PlayerGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.ResetOnSpawn = false
+
+-- Основной фрейм с полупрозрачным фоном
+local MainFrame = Instance.new("ScrollingFrame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 300, 0, 250)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -125)
+MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MainFrame.BackgroundTransparency = 0.3
+MainFrame.BorderSizePixel = 0
+MainFrame.ZIndex = 2
+MainFrame.ScrollBarImageTransparency = 1
+MainFrame.Parent = ScreenGui
+
+-- Скругление углов
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
+
+-- Тень окна
+local ShadowEffect = Instance.new("ImageLabel")
+ShadowEffect.Name = "Shadow"
+ShadowEffect.Size = UDim2.new(1, 20, 1, 20)
+ShadowEffect.Position = UDim2.new(0, -10, 0, -10)
+ShadowEffect.BackgroundTransparency = 1
+ShadowEffect.Image = "rbxassetid://1316045217"
+ShadowEffect.ImageColor3 = Color3.fromRGB(0, 0, 0)
+ShadowEffect.ImageTransparency = 0.8
+ShadowEffect.ScaleType = Enum.ScaleType.Slice
+ShadowEffect.SliceCenter = Rect.new(10, 10, 118, 118)
+ShadowEffect.ZIndex = 1
+ShadowEffect.Parent = MainFrame
+
+-- Внутренняя обводка
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(80, 80, 80)
+UIStroke.Thickness = 1
+UIStroke.Transparency = 0.5
+UIStroke.Parent = MainFrame
+
+-- Заголовок (для перемещения)
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Size = UDim2.new(1, 0, 0, 35)
+TitleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+TitleBar.BackgroundTransparency = 0.2
+TitleBar.BorderSizePixel = 0
+TitleBar.ZIndex = 3
+TitleBar.Parent = MainFrame
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 12)
+TitleCorner.Parent = TitleBar
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(1, -50, 1, 0)
+TitleLabel.Position = UDim2.new(0, 10, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "Denker Cheat " .. Version
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextSize = 14
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.ZIndex = 3
+TitleLabel.Parent = TitleBar
+
+-- Кнопка закрытия
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 25, 0, 25)
+CloseButton.Position = UDim2.new(1, -30, 0.5, -12)
+CloseButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+CloseButton.BackgroundTransparency = 0.3
+CloseButton.Text = "×"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 18
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.ZIndex = 3
+CloseButton.Parent = TitleBar
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 6)
+CloseCorner.Parent = CloseButton
+
+-- ScrollingFrame для прокрутки
+local ScrollFrame = Instance.new("ScrollingFrame")
+ScrollFrame.Name = "ScrollFrame"
+ScrollFrame.Size = UDim2.new(1, -20, 1, -45)
+ScrollFrame.Position = UDim2.new(0, 10, 0, 40)
+ScrollFrame.BackgroundTransparency = 1
+ScrollFrame.BorderSizePixel = 0
+ScrollFrame.ScrollBarThickness = 6
+ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(120, 120, 120)
+ScrollFrame.ScrollBarImageTransparency = 0.5
+ScrollFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
+ScrollFrame.ZIndex = 3
+ScrollFrame.Parent = MainFrame
+
+-- Контейнер для всех кнопок внутри ScrollingFrame
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Name = "ContentFrame"
+ContentFrame.Size = UDim2.new(1, 0, 0, 0)
+ContentFrame.Position = UDim2.new(0, 0, 0, 0)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.ZIndex = 3
+ContentFrame.Parent = ScrollFrame
+
+-- Функция для обновления размера ContentFrame и CanvasSize
+local function updateContentSize()
+	local totalHeight = 0
+
+	-- Считаем общую высоту всех элементов
+	for _, child in ipairs(ContentFrame:GetChildren()) do
+		if child:IsA("Frame") then
+			totalHeight = totalHeight + child.Size.Y.Offset
+		end
+	end
+
+	-- Устанавливаем размер ContentFrame и CanvasSize
+	ContentFrame.Size = UDim2.new(1, 0, 0, totalHeight)
+	ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, totalHeight)
+end
+
+-- Функция для создания темно-серых кнопок с текстом слева и ImageLabel справа
+local function createExpandableButton(text, positionY)
+	local buttonContainer = Instance.new("Frame")
+	buttonContainer.Size = UDim2.new(1, 0, 0, 40)
+	buttonContainer.Position = UDim2.new(0, 0, 0, positionY)
+	buttonContainer.BackgroundTransparency = 1
+	buttonContainer.ZIndex = 3
+	buttonContainer.Parent = ContentFrame
+
+	local button = Instance.new("TextButton")
+	button.Size = UDim2.new(1, 0, 1, 0)
+	button.Position = UDim2.new(0, 0, 0, 0)
+	button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	button.BackgroundTransparency = 0.2
+	button.Text = "   " .. text
+	button.TextColor3 = Color3.fromRGB(255, 255, 255)
+	button.TextSize = 13
+	button.Font = Enum.Font.Gotham
+	button.TextXAlignment = Enum.TextXAlignment.Left
+	button.ZIndex = 3
+	button.Parent = buttonContainer
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 8)
+	corner.Parent = button
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(100, 100, 100)
+	stroke.Thickness = 1
+	stroke.Transparency = 0.3
+	stroke.Parent = button
+
+	-- ImageLabel для иконки справа
+	local imageLabel = Instance.new("ImageLabel")
+	imageLabel.Size = UDim2.new(0, 20, 0, 20)
+	imageLabel.Position = UDim2.new(1, -30, 0.5, -10)
+	imageLabel.BackgroundTransparency = 1
+	imageLabel.Image = "rbxassetid://11552476835"
+	imageLabel.ZIndex = 3
+	imageLabel.Parent = button
+
+	-- Контейнер для расширяемого контента (скрыт по умолчанию)
+	local expandFrame = Instance.new("Frame")
+	expandFrame.Size = UDim2.new(1, 0, 0, 0)
+	expandFrame.Position = UDim2.new(0, 0, 1, 10)
+	expandFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	expandFrame.BackgroundTransparency = 0.1
+	expandFrame.BorderSizePixel = 0
+	expandFrame.ClipsDescendants = true
+	expandFrame.ZIndex = 3
+	expandFrame.Visible = false
+	expandFrame.Parent = buttonContainer
+
+	local expandCorner = Instance.new("UICorner")
+	expandCorner.CornerRadius = UDim.new(0, 6)
+	expandCorner.Parent = expandFrame
+
+	local expandStroke = Instance.new("UIStroke")
+	expandStroke.Color = Color3.fromRGB(80, 80, 80)
+	expandStroke.Thickness = 1
+	expandStroke.Transparency = 0.3
+	expandStroke.Parent = expandFrame
+
+	return buttonContainer, button, expandFrame, imageLabel
+end
+
+-- Функция для создания кнопки Fly с выпадающим контентом
+local function createFlyButton(positionY)
+	local buttonContainer, button, expandFrame, imageLabel = createExpandableButton("🛸 Fly System", positionY)
+
+	-- Кнопка включения Fly
+	local flyToggleButton = Instance.new("TextButton")
+	flyToggleButton.Size = UDim2.new(1, -10, 0, 30)
+	flyToggleButton.Position = UDim2.new(0, 5, 0, 5)
+	flyToggleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	flyToggleButton.BackgroundTransparency = 0.2
+	flyToggleButton.Text = "Включить Fly"
+	flyToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	flyToggleButton.TextSize = 12
+	flyToggleButton.Font = Enum.Font.Gotham
+	flyToggleButton.ZIndex = 4
+	flyToggleButton.Parent = expandFrame
+
+	local flyToggleCorner = Instance.new("UICorner")
+	flyToggleCorner.CornerRadius = UDim.new(0, 4)
+	flyToggleCorner.Parent = flyToggleButton
+
+	-- Индикатор статуса Fly
+	local flyStatusLabel = Instance.new("TextLabel")
+	flyStatusLabel.Size = UDim2.new(1, -10, 0, 20)
+	flyStatusLabel.Position = UDim2.new(0, 5, 0, 40)
+	flyStatusLabel.BackgroundTransparency = 1
+	flyStatusLabel.Text = "Статус: ❌ Выключено"
+	flyStatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+	flyStatusLabel.TextSize = 10
+	flyStatusLabel.Font = Enum.Font.Gotham
+	flyStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+	flyStatusLabel.ZIndex = 4
+	flyStatusLabel.Parent = expandFrame
+
+	-- Слайдер для скорости
+	local speedSliderContainer = Instance.new("Frame")
+	speedSliderContainer.Size = UDim2.new(1, -10, 0, 40)
+	speedSliderContainer.Position = UDim2.new(0, 5, 0, 65)
+	speedSliderContainer.BackgroundTransparency = 1
+	speedSliderContainer.ZIndex = 4
+	speedSliderContainer.Parent = expandFrame
+
+	local speedLabel = Instance.new("TextLabel")
+	speedLabel.Size = UDim2.new(1, 0, 0, 15)
+	speedLabel.Position = UDim2.new(0, 0, 0, 0)
+	speedLabel.BackgroundTransparency = 1
+	speedLabel.Text = "Скорость полета: 1"
+	speedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	speedLabel.TextSize = 10
+	speedLabel.Font = Enum.Font.Gotham
+	speedLabel.TextXAlignment = Enum.TextXAlignment.Left
+	speedLabel.ZIndex = 4
+	speedLabel.Parent = speedSliderContainer
+
+	-- Контейнер для слайдера
+	local sliderBackground = Instance.new("Frame")
+	sliderBackground.Size = UDim2.new(1, 0, 0, 20)
+	sliderBackground.Position = UDim2.new(0, 0, 0, 20)
+	sliderBackground.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	sliderBackground.BorderSizePixel = 0
+	sliderBackground.ZIndex = 4
+	sliderBackground.Parent = speedSliderContainer
+
+	local sliderCorner = Instance.new("UICorner")
+	sliderCorner.CornerRadius = UDim.new(0, 4)
+	sliderCorner.Parent = sliderBackground
+
+	local sliderFill = Instance.new("Frame")
+	sliderFill.Size = UDim2.new(0, 0, 1, 0)
+	sliderFill.Position = UDim2.new(0, 0, 0, 0)
+	sliderFill.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+	sliderFill.BorderSizePixel = 0
+	sliderFill.ZIndex = 5
+	sliderFill.Parent = sliderBackground
+
+	local fillCorner = Instance.new("UICorner")
+	fillCorner.CornerRadius = UDim.new(0, 4)
+	fillCorner.Parent = sliderFill
+
+	local sliderButton = Instance.new("TextButton")
+	sliderButton.Size = UDim2.new(1, 0, 1, 0)
+	sliderButton.Position = UDim2.new(0, 0, 0, 0)
+	sliderButton.BackgroundTransparency = 1
+	sliderButton.Text = ""
+	sliderButton.ZIndex = 6
+	sliderButton.Parent = sliderBackground
+
+	-- Кнопки для быстрой регулировки
+	local speedControls = Instance.new("Frame")
+	speedControls.Size = UDim2.new(1, 0, 0, 15)
+	speedControls.Position = UDim2.new(0, 0, 0, 45)
+	speedControls.BackgroundTransparency = 1
+	speedControls.ZIndex = 4
+	speedControls.Parent = speedSliderContainer
+
+	local minusButton = Instance.new("TextButton")
+	minusButton.Size = UDim2.new(0, 20, 1, 0)
+	minusButton.Position = UDim2.new(0, 0, 0, 0)
+	minusButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	minusButton.BackgroundTransparency = 0.3
+	minusButton.Text = "-"
+	minusButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	minusButton.TextSize = 12
+	minusButton.Font = Enum.Font.GothamBold
+	minusButton.ZIndex = 4
+	minusButton.Parent = speedControls
+
+	local minusCorner = Instance.new("UICorner")
+	minusCorner.CornerRadius = UDim.new(0, 3)
+	minusCorner.Parent = minusButton
+
+	local plusButton = Instance.new("TextButton")
+	plusButton.Size = UDim2.new(0, 20, 1, 0)
+	plusButton.Position = UDim2.new(1, -20, 0, 0)
+	plusButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	plusButton.BackgroundTransparency = 0.3
+	plusButton.Text = "+"
+	plusButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	plusButton.TextSize = 12
+	plusButton.Font = Enum.Font.GothamBold
+	plusButton.ZIndex = 4
+	plusButton.Parent = speedControls
+
+	local plusCorner = Instance.new("UICorner")
+	plusCorner.CornerRadius = UDim.new(0, 3)
+	plusCorner.Parent = plusButton
+
+	return buttonContainer, button, expandFrame, imageLabel, flyToggleButton, flyStatusLabel, speedLabel, sliderFill, sliderButton, minusButton, plusButton
+end
+
+-- Функция для создания кнопки ESP с выпадающим контентом
+local function createESPButton(positionY)
+	local buttonContainer, button, expandFrame, imageLabel = createExpandableButton("🎯 ESP System", positionY)
+
+	-- Кнопка включения ESP Ник игроков
+	local espNamesToggleButton = Instance.new("TextButton")
+	espNamesToggleButton.Size = UDim2.new(1, -10, 0, 30)
+	espNamesToggleButton.Position = UDim2.new(0, 5, 0, 5)
+	espNamesToggleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	espNamesToggleButton.BackgroundTransparency = 0.2
+	espNamesToggleButton.Text = "Включить ESP Ник игроков"
+	espNamesToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	espNamesToggleButton.TextSize = 12
+	espNamesToggleButton.Font = Enum.Font.Gotham
+	espNamesToggleButton.ZIndex = 4
+	espNamesToggleButton.Parent = expandFrame
+
+	local espNamesToggleCorner = Instance.new("UICorner")
+	espNamesToggleCorner.CornerRadius = UDim.new(0, 4)
+	espNamesToggleCorner.Parent = espNamesToggleButton
+
+	-- Индикатор статуса ESP Ник игроков
+	local espNamesStatusLabel = Instance.new("TextLabel")
+	espNamesStatusLabel.Size = UDim2.new(1, -10, 0, 20)
+	espNamesStatusLabel.Position = UDim2.new(0, 5, 0, 40)
+	espNamesStatusLabel.BackgroundTransparency = 1
+	espNamesStatusLabel.Text = "Ники: ❌ Выключено"
+	espNamesStatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+	espNamesStatusLabel.TextSize = 10
+	espNamesStatusLabel.Font = Enum.Font.Gotham
+	espNamesStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+	espNamesStatusLabel.ZIndex = 4
+	espNamesStatusLabel.Parent = expandFrame
+
+	-- Кнопка включения ESP Игроки (хитбоксы)
+	local espBoxesToggleButton = Instance.new("TextButton")
+	espBoxesToggleButton.Size = UDim2.new(1, -10, 0, 30)
+	espBoxesToggleButton.Position = UDim2.new(0, 5, 0, 65)
+	espBoxesToggleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	espBoxesToggleButton.BackgroundTransparency = 0.2
+	espBoxesToggleButton.Text = "Включить ESP Игроки"
+	espBoxesToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	espBoxesToggleButton.TextSize = 12
+	espBoxesToggleButton.Font = Enum.Font.Gotham
+	espBoxesToggleButton.ZIndex = 4
+	espBoxesToggleButton.Parent = expandFrame
+
+	local espBoxesToggleCorner = Instance.new("UICorner")
+	espBoxesToggleCorner.CornerRadius = UDim.new(0, 4)
+	espBoxesToggleCorner.Parent = espBoxesToggleButton
+
+	-- Индикатор статуса ESP Игроки
+	local espBoxesStatusLabel = Instance.new("TextLabel")
+	espBoxesStatusLabel.Size = UDim2.new(1, -10, 0, 20)
+	espBoxesStatusLabel.Position = UDim2.new(0, 5, 0, 100)
+	espBoxesStatusLabel.BackgroundTransparency = 1
+	espBoxesStatusLabel.Text = "Хитбоксы: ❌ Выключено"
+	espBoxesStatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+	espBoxesStatusLabel.TextSize = 10
+	espBoxesStatusLabel.Font = Enum.Font.Gotham
+	espBoxesStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+	espBoxesStatusLabel.ZIndex = 4
+	espBoxesStatusLabel.Parent = expandFrame
+
+	-- Информационный текст
+	local infoLabel = Instance.new("TextLabel")
+	infoLabel.Size = UDim2.new(1, -10, 0, 30)
+	infoLabel.Position = UDim2.new(0, 5, 0, 125)
+	infoLabel.BackgroundTransparency = 1
+	infoLabel.Text = "Отображает игроков через стены"
+	infoLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	infoLabel.TextSize = 9
+	infoLabel.Font = Enum.Font.Gotham
+	infoLabel.TextXAlignment = Enum.TextXAlignment.Left
+	infoLabel.TextWrapped = true
+	infoLabel.ZIndex = 4
+	infoLabel.Parent = expandFrame
+
+	return buttonContainer, button, expandFrame, imageLabel, espNamesToggleButton, espNamesStatusLabel, espBoxesToggleButton, espBoxesStatusLabel
+end
+
+-- Функция для создания простой кнопки Noclip (без выпадающего меню)
+local function createSimpleNoclipButton(positionY)
+	local buttonContainer = Instance.new("Frame")
+	buttonContainer.Size = UDim2.new(1, 0, 0, 40)
+	buttonContainer.Position = UDim2.new(0, 0, 0, positionY)
+	buttonContainer.BackgroundTransparency = 1
+	buttonContainer.ZIndex = 3
+	buttonContainer.Parent = ContentFrame
+
+	local button = Instance.new("TextButton")
+	button.Size = UDim2.new(1, 0, 1, 0)
+	button.Position = UDim2.new(0, 0, 0, 0)
+	button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	button.BackgroundTransparency = 0.2
+	button.Text = "   🚫 Noclip: Выключено"
+	button.TextColor3 = Color3.fromRGB(255, 255, 255)
+	button.TextSize = 13
+	button.Font = Enum.Font.Gotham
+	button.TextXAlignment = Enum.TextXAlignment.Left
+	button.ZIndex = 3
+	button.Parent = buttonContainer
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 8)
+	corner.Parent = button
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(100, 100, 100)
+	stroke.Thickness = 1
+	stroke.Transparency = 0.3
+	stroke.Parent = button
+
+	return buttonContainer, button
+end
+
+-- Создаем кнопки
+local FlyButtonContainer, FlyButton, FlyExpandFrame, FlyImageLabel, FlyToggleButton, FlyStatusLabel, SpeedLabel, SpeedSliderFill, SpeedSliderButton, SpeedMinusButton, SpeedPlusButton = createFlyButton(0)
+local ESPButtonContainer, ESPButton, ESPExpandFrame, ESPImageLabel, ESPNamesToggleButton, ESPNamesStatusLabel, ESPBoxesToggleButton, ESPBoxesStatusLabel = createESPButton(45)
+local NoclipButtonContainer, NoclipButton = createSimpleNoclipButton(90)
+
+-- Переменные для систем
+local nowe = false
+local speeds = 1
+local tpwalking = false
+local flyExpanded = false
+local espExpanded = false
+local noclipEnabled = false
+local noclipConnection = nil
+local espNamesEnabled = false
+local espBoxesEnabled = false
+local espConnections = {}
+local espNameTags = {}
+local espBoxes = {}
+
+-- Настройки скорости слайдера
+local minSpeed = 1
+local maxSpeed = 15
+local currentSpeed = 1
+
+-- Функция для перемещения кнопок при открытии/закрытии меню
+local function updateButtonPositions()
+	local currentY = 0
+
+	-- Fly кнопка
+	FlyButtonContainer.Position = UDim2.new(0, 0, 0, currentY)
+	currentY = currentY + 40
+
+	-- Если Fly раскрыт, добавляем его высоту
+	if flyExpanded then
+		currentY = currentY + 110 + 5
+	else
+		currentY = currentY + 5
+	end
+
+	-- ESP кнопка
+	ESPButtonContainer.Position = UDim2.new(0, 0, 0, currentY)
+	currentY = currentY + 40
+
+	-- Если ESP раскрыт, добавляем его высоту
+	if espExpanded then
+		currentY = currentY + 160 + 5
+	else
+		currentY = currentY + 5
+	end
+
+	-- Noclip кнопка
+	NoclipButtonContainer.Position = UDim2.new(0, 0, 0, currentY)
+
+	-- Обновляем размер контента
+	updateContentSize()
+end
+
+-- Функция для исправленной анимации кнопок
+local function safeAnimateButton(button)
+	if button:GetAttribute("Animating") then return end
+	button:SetAttribute("Animating", true)
+
+	local originalSize = button.Size
+	local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+	local shrinkTween = TweenService:Create(button, tweenInfo, {Size = originalSize - UDim2.new(0, 3, 0, 3)})
+	local growTween = TweenService:Create(button, tweenInfo, {Size = originalSize})
+
+	shrinkTween:Play()
+	shrinkTween.Completed:Connect(function()
+		growTween:Play()
+		growTween.Completed:Connect(function()
+			button:SetAttribute("Animating", false)
+		end)
+	end)
+end
+
+-- Анимация при наведении курсора для темно-серых кнопок
+local function setupDarkGrayHoverEffects(button)
+	local originalTransparency = button.BackgroundTransparency
+
+	button.MouseEnter:Connect(function()
+		if button:GetAttribute("Animating") then return end
+		local tween = TweenService:Create(button, TweenInfo.new(0.2), {
+			BackgroundColor3 = Color3.fromRGB(80, 80, 80),
+			BackgroundTransparency = originalTransparency - 0.1
+		})
+		tween:Play()
+	end)
+
+	button.MouseLeave:Connect(function()
+		if button:GetAttribute("Animating") then return end
+		local tween = TweenService:Create(button, TweenInfo.new(0.2), {
+			BackgroundColor3 = Color3.fromRGB(60, 60, 60),
+			BackgroundTransparency = originalTransparency
+		})
+		tween:Play()
+	end)
+end
+
+-- Функция для анимации иконки (поворот)
+local function animateIcon(imageLabel, expand)
+	local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+	if expand then
+		local tween = TweenService:Create(imageLabel, tweenInfo, {
+			Rotation = 180
+		})
+		tween:Play()
+	else
+		local tween = TweenService:Create(imageLabel, tweenInfo, {
+			Rotation = 0
+		})
+		tween:Play()
+	end
+end
+
+-- Функция для обновления статуса Fly
+local function updateFlyStatus()
+	if nowe then
+		FlyStatusLabel.Text = "Статус: ✅ Включено"
+		FlyStatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+		FlyToggleButton.Text = "Выключить Fly"
+	else
+		FlyStatusLabel.Text = "Статус: ❌ Выключено"
+		FlyStatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+		FlyToggleButton.Text = "Включить Fly"
+	end
+end
+
+-- Функция для обновления статуса ESP Ников
+local function updateESPNamesStatus()
+	if espNamesEnabled then
+		ESPNamesStatusLabel.Text = "Ники: ✅ Включено"
+		ESPNamesStatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+		ESPNamesToggleButton.Text = "Выключить ESP Ник игроков"
+	else
+		ESPNamesStatusLabel.Text = "Ники: ❌ Выключено"
+		ESPNamesStatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+		ESPNamesToggleButton.Text = "Включить ESP Ник игроков"
+	end
+end
+
+-- Функция для обновления статуса ESP Хитбоксов
+local function updateESPBoxesStatus()
+	if espBoxesEnabled then
+		ESPBoxesStatusLabel.Text = "Хитбоксы: ✅ Включено"
+		ESPBoxesStatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+		ESPBoxesToggleButton.Text = "Выключить ESP Игроки"
+	else
+		ESPBoxesStatusLabel.Text = "Хитбоксы: ❌ Выключено"
+		ESPBoxesStatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+		ESPBoxesToggleButton.Text = "Включить ESP Игроки"
+	end
+end
+
+-- Функция для обновления статуса Noclip
+local function updateNoclipStatus()
+	if noclipEnabled then
+		NoclipButton.Text = "   🚫 Noclip: ✅ Включено"
+		NoclipButton.TextColor3 = Color3.fromRGB(100, 255, 100)
+	else
+		NoclipButton.Text = "   🚫 Noclip: ❌ Выключено"
+		NoclipButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+	end
+end
+
+-- Функция для обновления скорости
+local function updateSpeed(newSpeed)
+	currentSpeed = math.clamp(newSpeed, minSpeed, maxSpeed)
+	speeds = currentSpeed
+
+	-- Обновляем текст
+	SpeedLabel.Text = "Скорость полета: " .. currentSpeed
+
+	-- Обновляем позицию слайдера (от 0% до 100%)
+	local fillPercentage = (currentSpeed - minSpeed) / (maxSpeed - minSpeed)
+
+	-- Анимация обновления слайдера
+	local tween = TweenService:Create(SpeedSliderFill, TweenInfo.new(0.2), {
+		Size = UDim2.new(fillPercentage, 0, 1, 0)
+	})
+	tween:Play()
+
+	-- Если полет активен, перезапускаем систему телепортации с новой скоростью
+	if nowe then
+		tpwalking = false
+		for i = 1, speeds do
+			spawn(function()
+				local hb = game:GetService("RunService").Heartbeat	
+				tpwalking = true
+				local chr = game.Players.LocalPlayer.Character
+				local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+				while tpwalking and hb:Wait() and chr and hum and hum.Parent do
+					if hum.MoveDirection.Magnitude > 0 then
+						chr:TranslateBy(hum.MoveDirection)
+					end
+				end
+			end)
+		end
+		print("🎮 Скорость полета обновлена: " .. currentSpeed)
+	else
+		print("🎮 Скорость полета установлена: " .. currentSpeed)
+	end
+end
+
+-- Функция для анимации расширения/сворачивания Fly
+local function toggleFlyExpand()
+	safeAnimateButton(FlyButton)
+
+	if flyExpanded then
+		-- Сворачиваем
+		animateIcon(FlyImageLabel, false)
+
+		local tween = TweenService:Create(FlyExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(1, 0, 0, 0)
+		})
+		tween:Play()
+
+		tween.Completed:Connect(function()
+			FlyExpandFrame.Visible = false
+			flyExpanded = false
+			updateButtonPositions()
+		end)
+	else
+		-- Расширяем
+		FlyExpandFrame.Visible = true
+		animateIcon(FlyImageLabel, true)
+
+		local tween = TweenService:Create(FlyExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(1, 0, 0, 110)
+		})
+		tween:Play()
+
+		tween.Completed:Connect(function()
+			flyExpanded = true
+			updateButtonPositions()
+		end)
+	end
+end
+
+-- Функция для анимации расширения/сворачивания ESP
+local function toggleESPExpand()
+	safeAnimateButton(ESPButton)
+
+	if espExpanded then
+		-- Сворачиваем
+		animateIcon(ESPImageLabel, false)
+
+		local tween = TweenService:Create(ESPExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(1, 0, 0, 0)
+		})
+		tween:Play()
+
+		tween.Completed:Connect(function()
+			ESPExpandFrame.Visible = false
+			espExpanded = false
+			updateButtonPositions()
+		end)
+	else
+		-- Расширяем
+		ESPExpandFrame.Visible = true
+		animateIcon(ESPImageLabel, true)
+
+		local tween = TweenService:Create(ESPExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(1, 0, 0, 160)
+		})
+		tween:Play()
+
+		tween.Completed:Connect(function()
+			espExpanded = true
+			updateButtonPositions()
+		end)
+	end
+end
+
+-- СИСТЕМА NOCLIP
+local function toggleNoclip()
+	safeAnimateButton(NoclipButton)
+
+	if not noclipEnabled then
+		-- Включаем Noclip
+		noclipEnabled = true
+		updateNoclipStatus()
+
+		noclipConnection = RunService.Stepped:Connect(function()
+			if not noclipEnabled then
+				noclipConnection:Disconnect()
+				return
+			end
+
+			local character = player.Character
+			if character then
+				for _, child in pairs(character:GetChildren()) do
+					if child:IsA("BasePart") then
+						child.CanCollide = false
+					end
+				end
+			end
+		end)
+
+		print("🎮 Noclip включен")
+	else
+		-- Выключаем Noclip
+		noclipEnabled = false
+		updateNoclipStatus()
+
+		if noclipConnection then
+			noclipConnection:Disconnect()
+			noclipConnection = nil
+		end
+
+		-- Восстанавливаем коллизии
+		local character = player.Character
+		if character then
+			for _, child in pairs(character:GetChildren()) do
+				if child:IsA("BasePart") then
+					child.CanCollide = true
+				end
+			end
+		end
+
+		print("🎮 Noclip выключен")
+	end
+end
+
+-- СИСТЕМА ESP
+local function createNameTag(player)
+	local character = player.Character
+	if not character then return end
+
+	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+	if not humanoidRootPart then return end
+
+	-- Создаем BillBoardGui для отображения ника
+	local billboard = Instance.new("BillBoardGui")
+	billboard.Name = "ESP_NameTag_" .. player.Name
+	billboard.Adornee = humanoidRootPart
+	billboard.Size = UDim2.new(0, 200, 0, 50)
+	billboard.StudsOffset = Vector3.new(0, 3, 0)
+	billboard.AlwaysOnTop = true
+	billboard.MaxDistance = 500
+	billboard.Parent = humanoidRootPart
+
+	local textLabel = Instance.new("TextLabel")
+	textLabel.Size = UDim2.new(1, 0, 1, 0)
+	textLabel.BackgroundTransparency = 1
+	textLabel.Text = player.Name
+	textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	textLabel.TextSize = 14
+	textLabel.Font = Enum.Font.GothamBold
+	textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+	textLabel.TextStrokeTransparency = 0
+	textLabel.Parent = billboard
+
+	espNameTags[player] = billboard
+end
+
+local function createESPBox(player)
+	local character = player.Character
+	if not character then return end
+
+	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+	if not humanoidRootPart then return end
+
+	-- Создаем BoxHandleAdornment для хитбокса
+	local box = Instance.new("BoxHandleAdornment")
+	box.Name = "ESP_Box_" .. player.Name
+	box.Adornee = humanoidRootPart
+	box.AlwaysOnTop = true
+	box.ZIndex = 1
+	box.Size = humanoidRootPart.Size + Vector3.new(0.1, 0.1, 0.1)
+	box.Color3 = player.Team and player.Team.TeamColor.Color or Color3.fromRGB(255, 0, 0)
+	box.Transparency = 0.7
+	box.Parent = humanoidRootPart
+
+	espBoxes[player] = box
+end
+
+local function removeESP(player)
+	if espNameTags[player] then
+		espNameTags[player]:Destroy()
+		espNameTags[player] = nil
+	end
+	if espBoxes[player] then
+		espBoxes[player]:Destroy()
+		espBoxes[player] = nil
+	end
+end
+
+local function toggleESPNames()
+	safeAnimateButton(ESPNamesToggleButton)
+
+	if not espNamesEnabled then
+		-- Включаем ESP Ников
+		espNamesEnabled = true
+		updateESPNamesStatus()
+
+		-- Создаем теги для существующих игроков
+		for _, otherPlayer in pairs(Players:GetPlayers()) do
+			if otherPlayer ~= player then
+				createNameTag(otherPlayer)
+			end
+		end
+
+		-- Обработчик для новых игроков
+		espConnections.playerAdded = Players.PlayerAdded:Connect(function(otherPlayer)
+			if espNamesEnabled then
+				otherPlayer.CharacterAdded:Connect(function(character)
+					if espNamesEnabled then
+						wait(1)
+						createNameTag(otherPlayer)
+					end
+				end)
+			end
+		end)
+
+		-- Обработчик для удаления игроков
+		espConnections.playerRemoving = Players.PlayerRemoving:Connect(function(otherPlayer)
+			removeESP(otherPlayer)
+		end)
+
+		print("🎮 ESP Ники игроков включен")
+	else
+		-- Выключаем ESP Ников
+		espNamesEnabled = false
+		updateESPNamesStatus()
+
+		-- Удаляем все теги
+		for otherPlayer, billboard in pairs(espNameTags) do
+			if billboard then
+				billboard:Destroy()
+			end
+		end
+		espNameTags = {}
+
+		-- Отключаем соединения
+		if espConnections.playerAdded then
+			espConnections.playerAdded:Disconnect()
+			espConnections.playerAdded = nil
+		end
+
+		print("🎮 ESP Ники игроков выключен")
+	end
+end
+
+local function toggleESPBoxes()
+	safeAnimateButton(ESPBoxesToggleButton)
+
+	if not espBoxesEnabled then
+		-- Включаем ESP Хитбоксы
+		espBoxesEnabled = true
+		updateESPBoxesStatus()
+
+		-- Создаем хитбоксы для существующих игроков
+		for _, otherPlayer in pairs(Players:GetPlayers()) do
+			if otherPlayer ~= player then
+				createESPBox(otherPlayer)
+			end
+		end
+
+		-- Обработчик для новых игроков
+		if not espConnections.playerAdded then
+			espConnections.playerAdded = Players.PlayerAdded:Connect(function(otherPlayer)
+				if espBoxesEnabled then
+					otherPlayer.CharacterAdded:Connect(function(character)
+						if espBoxesEnabled then
+							wait(1)
+							createESPBox(otherPlayer)
+						end
+					end)
+				end
+			end)
+		end
+
+		print("🎮 ESP Хитбоксы игроков включен")
+	else
+		-- Выключаем ESP Хитбоксы
+		espBoxesEnabled = false
+		updateESPBoxesStatus()
+
+		-- Удаляем все хитбоксы
+		for otherPlayer, box in pairs(espBoxes) do
+			if box then
+				box:Destroy()
+			end
+		end
+		espBoxes = {}
+
+		print("🎮 ESP Хитбоксы игроков выключен")
+	end
+end
+
+-- [КОД FLY СИСТЕМЫ]
+local function toggleFly()
+	local speaker = game:GetService("Players").LocalPlayer
+
+	if nowe == false then
+		nowe = true
+		updateFlyStatus()
+
+		for i = 1, speeds do
+			spawn(function()
+				local hb = game:GetService("RunService").Heartbeat	
+				tpwalking = true
+				local chr = game.Players.LocalPlayer.Character
+				local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+				while tpwalking and hb:Wait() and chr and hum and hum.Parent do
+					if hum.MoveDirection.Magnitude > 0 then
+						chr:TranslateBy(hum.MoveDirection)
+					end
+				end
+			end)
+		end
+
+		game.Players.LocalPlayer.Character.Animate.Disabled = true
+		local Char = game.Players.LocalPlayer.Character
+		local Hum = Char:FindFirstChildOfClass("Humanoid") or Char:FindFirstChildOfClass("AnimationController")
+
+		for i,v in next, Hum:GetPlayingAnimationTracks() do
+			v:AdjustSpeed(0)
+		end
+
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Landed,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Running,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming,false)
+		speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
+
+		if game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").RigType == Enum.HumanoidRigType.R6 then
+			local plr = game.Players.LocalPlayer
+			local torso = plr.Character.Torso
+			local flying = true
+			local deb = true
+			local ctrl = {f = 0, b = 0, l = 0, r = 0}
+			local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+			local maxspeed = 50
+			local speed = 0
+
+			local bg = Instance.new("BodyGyro", torso)
+			bg.P = 9e4
+			bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+			bg.cframe = torso.CFrame
+			local bv = Instance.new("BodyVelocity", torso)
+			bv.velocity = Vector3.new(0,0.1,0)
+			bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+
+			plr.Character.Humanoid.PlatformStand = true
+
+			while nowe == true or game:GetService("Players").LocalPlayer.Character.Humanoid.Health == 0 do
+				game:GetService("RunService").RenderStepped:Wait()
+
+				if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
+					speed = speed+.5+(speed/maxspeed)
+					if speed > maxspeed then
+						speed = maxspeed
+					end
+				elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
+					speed = speed-1
+					if speed < 0 then
+						speed = 0
+					end
+				end
+
+				if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
+					bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+					lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+				elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
+					bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+				else
+					bv.velocity = Vector3.new(0,0,0)
+				end
+
+				bg.cframe = game.Workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
+			end
+
+			ctrl = {f = 0, b = 0, l = 0, r = 0}
+			lastctrl = {f = 0, b = 0, l = 0, r = 0}
+			speed = 0
+			bg:Destroy()
+			bv:Destroy()
+			plr.Character.Humanoid.PlatformStand = false
+			game.Players.LocalPlayer.Character.Animate.Disabled = false
+			tpwalking = false
+
+		else
+			local plr = game.Players.LocalPlayer
+			local UpperTorso = plr.Character.UpperTorso
+			local flying = true
+			local deb = true
+			local ctrl = {f = 0, b = 0, l = 0, r = 0}
+			local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+			local maxspeed = 50
+			local speed = 0
+
+			local bg = Instance.new("BodyGyro", UpperTorso)
+			bg.P = 9e4
+			bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+			bg.cframe = UpperTorso.CFrame
+			local bv = Instance.new("BodyVelocity", UpperTorso)
+			bv.velocity = Vector3.new(0,0.1,0)
+			bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+
+			plr.Character.Humanoid.PlatformStand = true
+
+			while nowe == true or game:GetService("Players").LocalPlayer.Character.Humanoid.Health == 0 do
+				wait()
+
+				if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
+					speed = speed+.5+(speed/maxspeed)
+					if speed > maxspeed then
+						speed = maxspeed
+					end
+				elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
+					speed = speed-1
+					if speed < 0 then
+						speed = 0
+					end
+				end
+
+				if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
+					bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+					lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+				elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
+					bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+				else
+					bv.velocity = Vector3.new(0,0,0)
+				end
+
+				bg.cframe = game.Workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
+			end
+
+			ctrl = {f = 0, b = 0, l = 0, r = 0}
+			lastctrl = {f = 0, b = 0, l = 0, r = 0}
+			speed = 0
+			bg:Destroy()
+			bv:Destroy()
+			plr.Character.Humanoid.PlatformStand = false
+			game.Players.LocalPlayer.Character.Animate.Disabled = false
+			tpwalking = false
+		end
+
+	else 
+		nowe = false
+		updateFlyStatus()
+
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Landed,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Running,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming,true)
+		speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
+	end
+end
+
+-- Управление для полета (WASD)
+local ctrl = {f = 0, b = 0, l = 0, r = 0}
+local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+
+local function handleInput(input, processed)
+	if processed then return end
+	if input.KeyCode == Enum.KeyCode.W then
+		ctrl.f = 1
+	elseif input.KeyCode == Enum.KeyCode.S then
+		ctrl.b = -1
+	elseif input.KeyCode == Enum.KeyCode.A then
+		ctrl.l = -1
+	elseif input.KeyCode == Enum.KeyCode.D then
+		ctrl.r = 1
+	end
+end
+
+local function handleInputEnd(input, processed)
+	if processed then return end
+	if input.KeyCode == Enum.KeyCode.W then
+		ctrl.f = 0
+	elseif input.KeyCode == Enum.KeyCode.S then
+		ctrl.b = 0
+	elseif input.KeyCode == Enum.KeyCode.A then
+		ctrl.l = 0
+	elseif input.KeyCode == Enum.KeyCode.D then
+		ctrl.r = 0
+	end
+end
+
+UserInputService.InputBegan:Connect(handleInput)
+UserInputService.InputEnded:Connect(handleInputEnd)
+
+-- Улучшенная функция для обработки слайдера
+local function setupSpeedSlider()
+	local dragging = false
+
+	local function updateSliderFromInput(input)
+		local sliderAbsolutePosition = SpeedSliderButton.AbsolutePosition.X
+		local sliderAbsoluteSize = SpeedSliderButton.AbsoluteSize.X
+
+		local relativePosition = math.clamp((input.Position.X - sliderAbsolutePosition) / sliderAbsoluteSize, 0, 1)
+		local newSpeed = math.floor(minSpeed + relativePosition * (maxSpeed - minSpeed) + 0.5)
+
+		updateSpeed(newSpeed)
+	end
+
+	local function startDrag(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			updateSliderFromInput(input)
+
+			if input.UserInputType == Enum.UserInputType.Touch then
+				local connection
+				connection = input.Changed:Connect(function()
+					if input.UserInputState == Enum.UserInputState.End then
+						dragging = false
+						connection:Disconnect()
+					end
+				end)
+			end
+		end
+	end
+
+	local function handleDrag(input)
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			updateSliderFromInput(input)
+		end
+	end
+
+	local function endDrag(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = false
+		end
+	end
+
+	SpeedSliderButton.InputBegan:Connect(startDrag)
+	UserInputService.InputChanged:Connect(handleDrag)
+	UserInputService.InputEnded:Connect(endDrag)
+
+	local function handleSpeedButton(button, change)
+		local function trigger()
+			safeAnimateButton(button)
+			updateSpeed(currentSpeed + change)
+		end
+
+		button.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				trigger()
+			end
+		end)
+	end
+
+	handleSpeedButton(SpeedMinusButton, -1)
+	handleSpeedButton(SpeedPlusButton, 1)
+end
+
+-- Переменные для перемещения окна
+local dragging = false
+local dragStart, startPos
+
+-- Функция перемещения окна
+local function setupWindowDrag()
+	local function startDrag(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = MainFrame.Position
+
+			local tween = TweenService:Create(MainFrame, TweenInfo.new(0.2), {
+				BackgroundTransparency = 0.2
+			})
+			tween:Play()
+
+			if input.UserInputType == Enum.UserInputType.Touch then
+				local connection
+				connection = input.Changed:Connect(function()
+					if input.UserInputState == Enum.UserInputState.End then
+						dragging = false
+						connection:Disconnect()
+					end
+				end)
+			end
+		end
+	end
+
+	local function endDrag(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = false
+			local tween = TweenService:Create(MainFrame, TweenInfo.new(0.2), {
+				BackgroundTransparency = 0.3
+			})
+			tween:Play()
+		end
+	end
+
+	TitleBar.InputBegan:Connect(startDrag)
+	TitleLabel.InputBegan:Connect(startDrag)
+
+	UserInputService.InputEnded:Connect(endDrag)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local delta = input.Position - dragStart
+			MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		end
+	end)
+end
+
+-- Обработка кнопок
+local function setupButton(button, callback)
+	button.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			callback()
+		end
+	end)
+end
+
+-- Настройка кнопок
+setupButton(FlyButton, toggleFlyExpand)
+setupButton(FlyToggleButton, function()
+	safeAnimateButton(FlyToggleButton)
+	toggleFly()
+end)
+
+setupButton(ESPButton, toggleESPExpand)
+setupButton(ESPNamesToggleButton, toggleESPNames)
+setupButton(ESPBoxesToggleButton, toggleESPBoxes)
+
+setupButton(NoclipButton, toggleNoclip)
+
+setupButton(CloseButton, function()
+	safeAnimateButton(CloseButton)
+
+	local tween = TweenService:Create(MainFrame, TweenInfo.new(0.3), {
+		Size = UDim2.new(0, 0, 0, 0),
+		Position = UDim2.new(0.5, 0, 0.5, 0),
+		BackgroundTransparency = 1
+	})
+	tween:Play()
+
+	tween.Completed:Wait()
+	ScreenGui:Destroy()
+end)
+
+-- Применяем эффекты наведения
+setupDarkGrayHoverEffects(FlyButton)
+setupDarkGrayHoverEffects(CloseButton)
+setupDarkGrayHoverEffects(FlyToggleButton)
+setupDarkGrayHoverEffects(ESPButton)
+setupDarkGrayHoverEffects(ESPNamesToggleButton)
+setupDarkGrayHoverEffects(ESPBoxesToggleButton)
+setupDarkGrayHoverEffects(NoclipButton)
+setupDarkGrayHoverEffects(SpeedMinusButton)
+setupDarkGrayHoverEffects(SpeedPlusButton)
+
+-- Настраиваем перемещение окна и слайдер скорости
+setupWindowDrag()
+setupSpeedSlider()
+
+-- Инициализируем скорость и статусы
+updateSpeed(1)
+updateNoclipStatus()
+
+-- ОБНОВЛЯЕМ РАЗМЕР КОНТЕНТА ПОСЛЕ СОЗДАНИЯ ВСЕХ ЭЛЕМЕНТОВ
+updateContentSize()
+
+-- Анимация появления
+MainFrame.Size = UDim2.new(0, 0, 0, 0)
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+MainFrame.BackgroundTransparency = 1
+
+local openTween = TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+	Size = UDim2.new(0, 300, 0, 250),
+	Position = UDim2.new(0.5, -150, 0.5, -125),
+	BackgroundTransparency = 0.3
+})
+openTween:Play()
+
+print("🎮 Denker Cheat " .. Version .. " загружен!")
