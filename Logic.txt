@@ -58,8 +58,8 @@ FloatingShadow.Parent = FloatingButton
 -- Main frame with semi-transparent background
 local MainFrame = Instance.new("ScrollingFrame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 300, 0, 450)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -225)
+MainFrame.Size = UDim2.new(0, 350, 0, 500)
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -250)
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MainFrame.BackgroundTransparency = 0.3
 MainFrame.BorderSizePixel = 0
@@ -256,6 +256,322 @@ local function createExpandableButton(text, positionY)
 	expandStroke.Parent = expandFrame
 
 	return buttonContainer, button, expandFrame, imageLabel
+end
+
+-- Function to create RGB color picker
+local function createColorPicker(parent, position, colorName, defaultColor)
+	local colorContainer = Instance.new("Frame")
+	colorContainer.Size = UDim2.new(1, 0, 0, 90)
+	colorContainer.Position = position
+	colorContainer.BackgroundTransparency = 1
+	colorContainer.ZIndex = 4
+	colorContainer.Parent = parent
+
+	-- Color name label
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Size = UDim2.new(1, 0, 0, 15)
+	nameLabel.Position = UDim2.new(0, 0, 0, 0)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Text = colorName
+	nameLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	nameLabel.TextSize = 10
+	nameLabel.Font = Enum.Font.Gotham
+	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+	nameLabel.ZIndex = 4
+	nameLabel.Parent = colorContainer
+
+	-- Color preview
+	local colorPreview = Instance.new("Frame")
+	colorPreview.Size = UDim2.new(0, 40, 0, 40)
+	colorPreview.Position = UDim2.new(0, 0, 0, 20)
+	colorPreview.BackgroundColor3 = defaultColor
+	colorPreview.BorderSizePixel = 0
+	colorPreview.ZIndex = 4
+	colorPreview.Parent = colorContainer
+
+	local previewCorner = Instance.new("UICorner")
+	previewCorner.CornerRadius = UDim.new(0, 4)
+	previewCorner.Parent = colorPreview
+
+	local previewStroke = Instance.new("UIStroke")
+	previewStroke.Color = Color3.fromRGB(255, 255, 255)
+	previewStroke.Thickness = 1
+	previewStroke.Transparency = 0.3
+	previewStroke.Parent = colorPreview
+
+	-- RGB sliders container
+	local slidersContainer = Instance.new("Frame")
+	slidersContainer.Size = UDim2.new(1, -50, 0, 70)
+	slidersContainer.Position = UDim2.new(0, 45, 0, 15)
+	slidersContainer.BackgroundTransparency = 1
+	slidersContainer.ZIndex = 4
+	slidersContainer.Parent = colorContainer
+
+	-- Red slider
+	local redContainer = Instance.new("Frame")
+	redContainer.Size = UDim2.new(1, 0, 0, 20)
+	redContainer.Position = UDim2.new(0, 0, 0, 0)
+	redContainer.BackgroundTransparency = 1
+	redContainer.ZIndex = 4
+	redContainer.Parent = slidersContainer
+
+	local redLabel = Instance.new("TextLabel")
+	redLabel.Size = UDim2.new(0, 20, 1, 0)
+	redLabel.Position = UDim2.new(0, 0, 0, 0)
+	redLabel.BackgroundTransparency = 1
+	redLabel.Text = "R:"
+	redLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+	redLabel.TextSize = 9
+	redLabel.Font = Enum.Font.GothamBold
+	redLabel.TextXAlignment = Enum.TextXAlignment.Left
+	redLabel.ZIndex = 4
+	redLabel.Parent = redContainer
+
+	local redValue = Instance.new("TextLabel")
+	redValue.Size = UDim2.new(0, 25, 1, 0)
+	redValue.Position = UDim2.new(1, -25, 0, 0)
+	redValue.BackgroundTransparency = 1
+	redValue.Text = "255"
+	redValue.TextColor3 = Color3.fromRGB(255, 255, 255)
+	redValue.TextSize = 9
+	redValue.Font = Enum.Font.Gotham
+	redValue.TextXAlignment = Enum.TextXAlignment.Right
+	redValue.ZIndex = 4
+	redValue.Parent = redContainer
+
+	local redSliderBg = Instance.new("Frame")
+	redSliderBg.Size = UDim2.new(1, -50, 0, 10)
+	redSliderBg.Position = UDim2.new(0, 25, 0, 5)
+	redSliderBg.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	redSliderBg.BorderSizePixel = 0
+	redSliderBg.ZIndex = 4
+	redSliderBg.Parent = redContainer
+
+	local redSliderCorner = Instance.new("UICorner")
+	redSliderCorner.CornerRadius = UDim.new(0, 3)
+	redSliderCorner.Parent = redSliderBg
+
+	local redSliderFill = Instance.new("Frame")
+	redSliderFill.Size = UDim2.new(1, 0, 1, 0)
+	redSliderFill.Position = UDim2.new(0, 0, 0, 0)
+	redSliderFill.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+	redSliderFill.BorderSizePixel = 0
+	redSliderFill.ZIndex = 5
+	redSliderFill.Parent = redSliderBg
+
+	local redSliderCorner2 = Instance.new("UICorner")
+	redSliderCorner2.CornerRadius = UDim.new(0, 3)
+	redSliderCorner2.Parent = redSliderFill
+
+	local redSliderButton = Instance.new("TextButton")
+	redSliderButton.Size = UDim2.new(1, 0, 1, 0)
+	redSliderButton.Position = UDim2.new(0, 0, 0, 0)
+	redSliderButton.BackgroundTransparency = 1
+	redSliderButton.Text = ""
+	redSliderButton.ZIndex = 6
+	redSliderButton.Parent = redSliderBg
+
+	-- Green slider
+	local greenContainer = Instance.new("Frame")
+	greenContainer.Size = UDim2.new(1, 0, 0, 20)
+	greenContainer.Position = UDim2.new(0, 0, 0, 25)
+	greenContainer.BackgroundTransparency = 1
+	greenContainer.ZIndex = 4
+	greenContainer.Parent = slidersContainer
+
+	local greenLabel = Instance.new("TextLabel")
+	greenLabel.Size = UDim2.new(0, 20, 1, 0)
+	greenLabel.Position = UDim2.new(0, 0, 0, 0)
+	greenLabel.BackgroundTransparency = 1
+	greenLabel.Text = "G:"
+	greenLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+	greenLabel.TextSize = 9
+	greenLabel.Font = Enum.Font.GothamBold
+	greenLabel.TextXAlignment = Enum.TextXAlignment.Left
+	greenLabel.ZIndex = 4
+	greenLabel.Parent = greenContainer
+
+	local greenValue = Instance.new("TextLabel")
+	greenValue.Size = UDim2.new(0, 25, 1, 0)
+	greenValue.Position = UDim2.new(1, -25, 0, 0)
+	greenValue.BackgroundTransparency = 1
+	greenValue.Text = "255"
+	greenValue.TextColor3 = Color3.fromRGB(255, 255, 255)
+	greenValue.TextSize = 9
+	greenValue.Font = Enum.Font.Gotham
+	greenValue.TextXAlignment = Enum.TextXAlignment.Right
+	greenValue.ZIndex = 4
+	greenValue.Parent = greenContainer
+
+	local greenSliderBg = Instance.new("Frame")
+	greenSliderBg.Size = UDim2.new(1, -50, 0, 10)
+	greenSliderBg.Position = UDim2.new(0, 25, 0, 5)
+	greenSliderBg.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	greenSliderBg.BorderSizePixel = 0
+	greenSliderBg.ZIndex = 4
+	greenSliderBg.Parent = greenContainer
+
+	local greenSliderCorner = Instance.new("UICorner")
+	greenSliderCorner.CornerRadius = UDim.new(0, 3)
+	greenSliderCorner.Parent = greenSliderBg
+
+	local greenSliderFill = Instance.new("Frame")
+	greenSliderFill.Size = UDim2.new(1, 0, 1, 0)
+	greenSliderFill.Position = UDim2.new(0, 0, 0, 0)
+	greenSliderFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+	greenSliderFill.BorderSizePixel = 0
+	greenSliderFill.ZIndex = 5
+	greenSliderFill.Parent = greenSliderBg
+
+	local greenSliderCorner2 = Instance.new("UICorner")
+	greenSliderCorner2.CornerRadius = UDim.new(0, 3)
+	greenSliderCorner2.Parent = greenSliderFill
+
+	local greenSliderButton = Instance.new("TextButton")
+	greenSliderButton.Size = UDim2.new(1, 0, 1, 0)
+	greenSliderButton.Position = UDim2.new(0, 0, 0, 0)
+	greenSliderButton.BackgroundTransparency = 1
+	greenSliderButton.Text = ""
+	greenSliderButton.ZIndex = 6
+	greenSliderButton.Parent = greenSliderBg
+
+	-- Blue slider
+	local blueContainer = Instance.new("Frame")
+	blueContainer.Size = UDim2.new(1, 0, 0, 20)
+	blueContainer.Position = UDim2.new(0, 0, 0, 50)
+	blueContainer.BackgroundTransparency = 1
+	blueContainer.ZIndex = 4
+	blueContainer.Parent = slidersContainer
+
+	local blueLabel = Instance.new("TextLabel")
+	blueLabel.Size = UDim2.new(0, 20, 1, 0)
+	blueLabel.Position = UDim2.new(0, 0, 0, 0)
+	blueLabel.BackgroundTransparency = 1
+	blueLabel.Text = "B:"
+	blueLabel.TextColor3 = Color3.fromRGB(100, 100, 255)
+	blueLabel.TextSize = 9
+	blueLabel.Font = Enum.Font.GothamBold
+	blueLabel.TextXAlignment = Enum.TextXAlignment.Left
+	blueLabel.ZIndex = 4
+	blueLabel.Parent = blueContainer
+
+	local blueValue = Instance.new("TextLabel")
+	blueValue.Size = UDim2.new(0, 25, 1, 0)
+	blueValue.Position = UDim2.new(1, -25, 0, 0)
+	blueValue.BackgroundTransparency = 1
+	blueValue.Text = "255"
+	blueValue.TextColor3 = Color3.fromRGB(255, 255, 255)
+	blueValue.TextSize = 9
+	blueValue.Font = Enum.Font.Gotham
+	blueValue.TextXAlignment = Enum.TextXAlignment.Right
+	blueValue.ZIndex = 4
+	blueValue.Parent = blueContainer
+
+	local blueSliderBg = Instance.new("Frame")
+	blueSliderBg.Size = UDim2.new(1, -50, 0, 10)
+	blueSliderBg.Position = UDim2.new(0, 25, 0, 5)
+	blueSliderBg.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	blueSliderBg.BorderSizePixel = 0
+	blueSliderBg.ZIndex = 4
+	blueSliderBg.Parent = blueContainer
+
+	local blueSliderCorner = Instance.new("UICorner")
+	blueSliderCorner.CornerRadius = UDim.new(0, 3)
+	blueSliderCorner.Parent = blueSliderBg
+
+	local blueSliderFill = Instance.new("Frame")
+	blueSliderFill.Size = UDim2.new(1, 0, 1, 0)
+	blueSliderFill.Position = UDim2.new(0, 0, 0, 0)
+	blueSliderFill.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+	blueSliderFill.BorderSizePixel = 0
+	blueSliderFill.ZIndex = 5
+	blueSliderFill.Parent = blueSliderBg
+
+	local blueSliderCorner2 = Instance.new("UICorner")
+	blueSliderCorner2.CornerRadius = UDim.new(0, 3)
+	blueSliderCorner2.Parent = blueSliderFill
+
+	local blueSliderButton = Instance.new("TextButton")
+	blueSliderButton.Size = UDim2.new(1, 0, 1, 0)
+	blueSliderButton.Position = UDim2.new(0, 0, 0, 0)
+	blueSliderButton.BackgroundTransparency = 1
+	blueSliderButton.Text = ""
+	blueSliderButton.ZIndex = 6
+	blueSliderButton.Parent = blueSliderBg
+
+	return colorContainer, colorPreview, redValue, greenValue, blueValue, redSliderFill, greenSliderFill, blueSliderFill, redSliderButton, greenSliderButton, blueSliderButton
+end
+
+-- Function to create parameter slider
+local function createParameterSlider(parent, position, parameterName, minValue, maxValue, defaultValue, decimalPlaces)
+	local sliderContainer = Instance.new("Frame")
+	sliderContainer.Size = UDim2.new(1, 0, 0, 30)
+	sliderContainer.Position = position
+	sliderContainer.BackgroundTransparency = 1
+	sliderContainer.ZIndex = 4
+	sliderContainer.Parent = parent
+
+	-- Parameter name and value
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Size = UDim2.new(0.6, 0, 0, 15)
+	nameLabel.Position = UDim2.new(0, 0, 0, 0)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Text = parameterName
+	nameLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	nameLabel.TextSize = 9
+	nameLabel.Font = Enum.Font.Gotham
+	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+	nameLabel.ZIndex = 4
+	nameLabel.Parent = sliderContainer
+
+	local valueLabel = Instance.new("TextLabel")
+	valueLabel.Size = UDim2.new(0.4, 0, 0, 15)
+	valueLabel.Position = UDim2.new(0.6, 0, 0, 0)
+	valueLabel.BackgroundTransparency = 1
+	valueLabel.Text = tostring(defaultValue)
+	valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	valueLabel.TextSize = 9
+	valueLabel.Font = Enum.Font.Gotham
+	valueLabel.TextXAlignment = Enum.TextXAlignment.Right
+	valueLabel.ZIndex = 4
+	valueLabel.Parent = sliderContainer
+
+	-- Slider background
+	local sliderBackground = Instance.new("Frame")
+	sliderBackground.Size = UDim2.new(1, 0, 0, 10)
+	sliderBackground.Position = UDim2.new(0, 0, 0, 20)
+	sliderBackground.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	sliderBackground.BorderSizePixel = 0
+	sliderBackground.ZIndex = 4
+	sliderBackground.Parent = sliderContainer
+
+	local sliderCorner = Instance.new("UICorner")
+	sliderCorner.CornerRadius = UDim.new(0, 3)
+	sliderCorner.Parent = sliderBackground
+
+	-- Slider fill
+	local sliderFill = Instance.new("Frame")
+	sliderFill.Size = UDim2.new(0, 0, 1, 0)
+	sliderFill.Position = UDim2.new(0, 0, 0, 0)
+	sliderFill.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+	sliderFill.BorderSizePixel = 0
+	sliderFill.ZIndex = 5
+	sliderFill.Parent = sliderBackground
+
+	local fillCorner = Instance.new("UICorner")
+	fillCorner.CornerRadius = UDim.new(0, 3)
+	fillCorner.Parent = sliderFill
+
+	-- Slider button
+	local sliderButton = Instance.new("TextButton")
+	sliderButton.Size = UDim2.new(1, 0, 1, 0)
+	sliderButton.Position = UDim2.new(0, 0, 0, 0)
+	sliderButton.BackgroundTransparency = 1
+	sliderButton.Text = ""
+	sliderButton.ZIndex = 6
+	sliderButton.Parent = sliderBackground
+
+	return sliderContainer, valueLabel, sliderFill, sliderButton, minValue, maxValue, decimalPlaces
 end
 
 -- Function to create Fly button with dropdown content
@@ -622,7 +938,7 @@ local function createMapSettingsButton(positionY)
 
 	-- Content frame for tabs
 	local tabContent = Instance.new("Frame")
-	tabContent.Size = UDim2.new(1, -10, 0, 200)
+	tabContent.Size = UDim2.new(1, -10, 0, 400)
 	tabContent.Position = UDim2.new(0, 5, 0, 35)
 	tabContent.BackgroundTransparency = 1
 	tabContent.ZIndex = 4
@@ -734,7 +1050,7 @@ local function createMapSettingsButton(positionY)
 
 	-- Fire effect section
 	local fireSection = Instance.new("Frame")
-	fireSection.Size = UDim2.new(1, 0, 0, 80)
+	fireSection.Size = UDim2.new(1, 0, 0, 220)
 	fireSection.Position = UDim2.new(0, 0, 0, 0)
 	fireSection.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 	fireSection.BackgroundTransparency = 0.1
@@ -773,82 +1089,20 @@ local function createMapSettingsButton(positionY)
 	fireToggleCorner.CornerRadius = UDim.new(0, 3)
 	fireToggleCorner.Parent = fireToggle
 
-	local fireColor1Label = Instance.new("TextLabel")
-	fireColor1Label.Size = UDim2.new(0.4, 0, 0, 15)
-	fireColor1Label.Position = UDim2.new(0, 5, 0, 30)
-	fireColor1Label.BackgroundTransparency = 1
-	fireColor1Label.Text = "Color 1:"
-	fireColor1Label.TextColor3 = Color3.fromRGB(200, 200, 200)
-	fireColor1Label.TextSize = 8
-	fireColor1Label.Font = Enum.Font.Gotham
-	fireColor1Label.TextXAlignment = Enum.TextXAlignment.Left
-	fireColor1Label.ZIndex = 4
-	fireColor1Label.Parent = fireSection
+	-- Fire Color 1 picker
+	local fireColor1Picker, fireColor1Preview, fireColor1R, fireColor1G, fireColor1B, fireColor1FillR, fireColor1FillG, fireColor1FillB, fireColor1ButtonR, fireColor1ButtonG, fireColor1ButtonB = createColorPicker(fireSection, UDim2.new(0, 0, 0, 30), "Fire Color 1", Color3.new(1, 0.5, 0))
 
-	local fireColor1Preview = Instance.new("Frame")
-	fireColor1Preview.Size = UDim2.new(0, 40, 0, 15)
-	fireColor1Preview.Position = UDim2.new(0.4, 0, 0, 30)
-	fireColor1Preview.BackgroundColor3 = Color3.fromRGB(1, 0.5, 0)
-	fireColor1Preview.BorderSizePixel = 0
-	fireColor1Preview.ZIndex = 4
-	fireColor1Preview.Parent = fireSection
+	-- Fire Color 2 picker
+	local fireColor2Picker, fireColor2Preview, fireColor2R, fireColor2G, fireColor2B, fireColor2FillR, fireColor2FillG, fireColor2FillB, fireColor2ButtonR, fireColor2ButtonG, fireColor2ButtonB = createColorPicker(fireSection, UDim2.new(0, 0, 0, 130), "Fire Color 2", Color3.new(1, 1, 0))
 
-	local fireColor1Corner = Instance.new("UICorner")
-	fireColor1Corner.CornerRadius = UDim.new(0, 2)
-	fireColor1Corner.Parent = fireColor1Preview
-
-	local fireColor2Label = Instance.new("TextLabel")
-	fireColor2Label.Size = UDim2.new(0.4, 0, 0, 15)
-	fireColor2Label.Position = UDim2.new(0, 5, 0, 50)
-	fireColor2Label.BackgroundTransparency = 1
-	fireColor2Label.Text = "Color 2:"
-	fireColor2Label.TextColor3 = Color3.fromRGB(200, 200, 200)
-	fireColor2Label.TextSize = 8
-	fireColor2Label.Font = Enum.Font.Gotham
-	fireColor2Label.TextXAlignment = Enum.TextXAlignment.Left
-	fireColor2Label.ZIndex = 4
-	fireColor2Label.Parent = fireSection
-
-	local fireColor2Preview = Instance.new("Frame")
-	fireColor2Preview.Size = UDim2.new(0, 40, 0, 15)
-	fireColor2Preview.Position = UDim2.new(0.4, 0, 0, 50)
-	fireColor2Preview.BackgroundColor3 = Color3.fromRGB(1, 1, 0)
-	fireColor2Preview.BorderSizePixel = 0
-	fireColor2Preview.ZIndex = 4
-	fireColor2Preview.Parent = fireSection
-
-	local fireColor2Corner = Instance.new("UICorner")
-	fireColor2Corner.CornerRadius = UDim.new(0, 2)
-	fireColor2Corner.Parent = fireColor2Preview
-
-	local fireHeatLabel = Instance.new("TextLabel")
-	fireHeatLabel.Size = UDim2.new(0.6, 0, 0, 15)
-	fireHeatLabel.Position = UDim2.new(0.5, 5, 0, 30)
-	fireHeatLabel.BackgroundTransparency = 1
-	fireHeatLabel.Text = "Heat: 5"
-	fireHeatLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-	fireHeatLabel.TextSize = 8
-	fireHeatLabel.Font = Enum.Font.Gotham
-	fireHeatLabel.TextXAlignment = Enum.TextXAlignment.Left
-	fireHeatLabel.ZIndex = 4
-	fireHeatLabel.Parent = fireSection
-
-	local fireSizeLabel = Instance.new("TextLabel")
-	fireSizeLabel.Size = UDim2.new(0.6, 0, 0, 15)
-	fireSizeLabel.Position = UDim2.new(0.5, 5, 0, 50)
-	fireSizeLabel.BackgroundTransparency = 1
-	fireSizeLabel.Text = "Size: 5"
-	fireSizeLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-	fireSizeLabel.TextSize = 8
-	fireSizeLabel.Font = Enum.Font.Gotham
-	fireSizeLabel.TextXAlignment = Enum.TextXAlignment.Left
-	fireSizeLabel.ZIndex = 4
-	fireSizeLabel.Parent = fireSection
+	-- Fire parameters
+	local fireHeatSlider, fireHeatValue, fireHeatFill, fireHeatButton = createParameterSlider(fireSection, UDim2.new(0, 0, 0, 230), "Heat", 1, 20, 5, 1)
+	local fireSizeSlider, fireSizeValue, fireSizeFill, fireSizeButton = createParameterSlider(fireSection, UDim2.new(0, 0, 0, 265), "Size", 1, 20, 5, 1)
 
 	-- Sparkles effect section
 	local sparklesSection = Instance.new("Frame")
-	sparklesSection.Size = UDim2.new(1, 0, 0, 50)
-	sparklesSection.Position = UDim2.new(0, 0, 0, 85)
+	sparklesSection.Size = UDim2.new(1, 0, 0, 130)
+	sparklesSection.Position = UDim2.new(0, 0, 0, 300)
 	sparklesSection.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 	sparklesSection.BackgroundTransparency = 0.1
 	sparklesSection.ZIndex = 4
@@ -886,34 +1140,13 @@ local function createMapSettingsButton(positionY)
 	sparklesToggleCorner.CornerRadius = UDim.new(0, 3)
 	sparklesToggleCorner.Parent = sparklesToggle
 
-	local sparklesColorLabel = Instance.new("TextLabel")
-	sparklesColorLabel.Size = UDim2.new(0.4, 0, 0, 15)
-	sparklesColorLabel.Position = UDim2.new(0, 5, 0, 30)
-	sparklesColorLabel.BackgroundTransparency = 1
-	sparklesColorLabel.Text = "Color:"
-	sparklesColorLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-	sparklesColorLabel.TextSize = 8
-	sparklesColorLabel.Font = Enum.Font.Gotham
-	sparklesColorLabel.TextXAlignment = Enum.TextXAlignment.Left
-	sparklesColorLabel.ZIndex = 4
-	sparklesColorLabel.Parent = sparklesSection
-
-	local sparklesColorPreview = Instance.new("Frame")
-	sparklesColorPreview.Size = UDim2.new(0, 40, 0, 15)
-	sparklesColorPreview.Position = UDim2.new(0.4, 0, 0, 30)
-	sparklesColorPreview.BackgroundColor3 = Color3.fromRGB(0, 1, 1)
-	sparklesColorPreview.BorderSizePixel = 0
-	sparklesColorPreview.ZIndex = 4
-	sparklesColorPreview.Parent = sparklesSection
-
-	local sparklesColorCorner = Instance.new("UICorner")
-	sparklesColorCorner.CornerRadius = UDim.new(0, 2)
-	sparklesColorCorner.Parent = sparklesColorPreview
+	-- Sparkles Color picker
+	local sparklesColorPicker, sparklesColorPreview, sparklesColorR, sparklesColorG, sparklesColorB, sparklesColorFillR, sparklesColorFillG, sparklesColorFillB, sparklesColorButtonR, sparklesColorButtonG, sparklesColorButtonB = createColorPicker(sparklesSection, UDim2.new(0, 0, 0, 30), "Sparkles Color", Color3.new(0, 1, 1))
 
 	-- Smoke effect section
 	local smokeSection = Instance.new("Frame")
-	smokeSection.Size = UDim2.new(1, 0, 0, 80)
-	smokeSection.Position = UDim2.new(0, 0, 0, 140)
+	smokeSection.Size = UDim2.new(1, 0, 0, 220)
+	smokeSection.Position = UDim2.new(0, 0, 0, 440)
 	smokeSection.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 	smokeSection.BackgroundTransparency = 0.1
 	smokeSection.ZIndex = 4
@@ -951,71 +1184,25 @@ local function createMapSettingsButton(positionY)
 	smokeToggleCorner.CornerRadius = UDim.new(0, 3)
 	smokeToggleCorner.Parent = smokeToggle
 
-	local smokeColorLabel = Instance.new("TextLabel")
-	smokeColorLabel.Size = UDim2.new(0.4, 0, 0, 15)
-	smokeColorLabel.Position = UDim2.new(0, 5, 0, 30)
-	smokeColorLabel.BackgroundTransparency = 1
-	smokeColorLabel.Text = "Color:"
-	smokeColorLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-	smokeColorLabel.TextSize = 8
-	smokeColorLabel.Font = Enum.Font.Gotham
-	smokeColorLabel.TextXAlignment = Enum.TextXAlignment.Left
-	smokeColorLabel.ZIndex = 4
-	smokeColorLabel.Parent = smokeSection
+	-- Smoke Color picker
+	local smokeColorPicker, smokeColorPreview, smokeColorR, smokeColorG, smokeColorB, smokeColorFillR, smokeColorFillG, smokeColorFillB, smokeColorButtonR, smokeColorButtonG, smokeColorButtonB = createColorPicker(smokeSection, UDim2.new(0, 0, 0, 30), "Smoke Color", Color3.new(0.7, 0.7, 0.7))
 
-	local smokeColorPreview = Instance.new("Frame")
-	smokeColorPreview.Size = UDim2.new(0, 40, 0, 15)
-	smokeColorPreview.Position = UDim2.new(0.4, 0, 0, 30)
-	smokeColorPreview.BackgroundColor3 = Color3.fromRGB(0.7, 0.7, 0.7)
-	smokeColorPreview.BorderSizePixel = 0
-	smokeColorPreview.ZIndex = 4
-	smokeColorPreview.Parent = smokeSection
-
-	local smokeColorCorner = Instance.new("UICorner")
-	smokeColorCorner.CornerRadius = UDim.new(0, 2)
-	smokeColorCorner.Parent = smokeColorPreview
-
-	local smokeOpacityLabel = Instance.new("TextLabel")
-	smokeOpacityLabel.Size = UDim2.new(0.6, 0, 0, 15)
-	smokeOpacityLabel.Position = UDim2.new(0.5, 5, 0, 30)
-	smokeOpacityLabel.BackgroundTransparency = 1
-	smokeOpacityLabel.Text = "Opacity: 0.5"
-	smokeOpacityLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-	smokeOpacityLabel.TextSize = 8
-	smokeOpacityLabel.Font = Enum.Font.Gotham
-	smokeOpacityLabel.TextXAlignment = Enum.TextXAlignment.Left
-	smokeOpacityLabel.ZIndex = 4
-	smokeOpacityLabel.Parent = smokeSection
-
-	local smokeSizeLabel = Instance.new("TextLabel")
-	smokeSizeLabel.Size = UDim2.new(0.6, 0, 0, 15)
-	smokeSizeLabel.Position = UDim2.new(0.5, 5, 0, 50)
-	smokeSizeLabel.BackgroundTransparency = 1
-	smokeSizeLabel.Text = "Size: 3"
-	smokeSizeLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-	smokeSizeLabel.TextSize = 8
-	smokeSizeLabel.Font = Enum.Font.Gotham
-	smokeSizeLabel.TextXAlignment = Enum.TextXAlignment.Left
-	smokeSizeLabel.ZIndex = 4
-	smokeSizeLabel.Parent = smokeSection
-
-	local smokeRiseLabel = Instance.new("TextLabel")
-	smokeRiseLabel.Size = UDim2.new(0.6, 0, 0, 15)
-	smokeRiseLabel.Position = UDim2.new(0.5, 5, 0, 65)
-	smokeRiseLabel.BackgroundTransparency = 1
-	smokeRiseLabel.Text = "Rise: 2"
-	smokeRiseLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-	smokeRiseLabel.TextSize = 8
-	smokeRiseLabel.Font = Enum.Font.Gotham
-	smokeRiseLabel.TextXAlignment = Enum.TextXAlignment.Left
-	smokeRiseLabel.ZIndex = 4
-	smokeRiseLabel.Parent = smokeSection
+	-- Smoke parameters
+	local smokeOpacitySlider, smokeOpacityValue, smokeOpacityFill, smokeOpacityButton = createParameterSlider(smokeSection, UDim2.new(0, 0, 0, 130), "Opacity", 0, 1, 0.5, 2)
+	local smokeSizeSlider, smokeSizeValue, smokeSizeFill, smokeSizeButton = createParameterSlider(smokeSection, UDim2.new(0, 0, 0, 165), "Size", 1, 10, 3, 1)
+	local smokeRiseSlider, smokeRiseValue, smokeRiseFill, smokeRiseButton = createParameterSlider(smokeSection, UDim2.new(0, 0, 0, 200), "Rise Speed", 1, 10, 2, 1)
 
 	return buttonContainer, button, expandFrame, imageLabel, transparencyLabel, sliderFill, sliderButton, minusButton, plusButton, 
 	       transparencyTab, effectsTab, transparencyContent, effectsContent,
-	       fireToggle, fireColor1Preview, fireColor2Preview, fireHeatLabel, fireSizeLabel,
-	       sparklesToggle, sparklesColorPreview,
-	       smokeToggle, smokeColorPreview, smokeOpacityLabel, smokeSizeLabel, smokeRiseLabel
+	       fireToggle, fireColor1Preview, fireColor1R, fireColor1G, fireColor1B, fireColor1FillR, fireColor1FillG, fireColor1FillB, fireColor1ButtonR, fireColor1ButtonG, fireColor1ButtonB,
+	       fireColor2Preview, fireColor2R, fireColor2G, fireColor2B, fireColor2FillR, fireColor2FillG, fireColor2FillB, fireColor2ButtonR, fireColor2ButtonG, fireColor2ButtonB,
+	       fireHeatValue, fireHeatFill, fireHeatButton,
+	       fireSizeValue, fireSizeFill, fireSizeButton,
+	       sparklesToggle, sparklesColorPreview, sparklesColorR, sparklesColorG, sparklesColorB, sparklesColorFillR, sparklesColorFillG, sparklesColorFillB, sparklesColorButtonR, sparklesColorButtonG, sparklesColorButtonB,
+	       smokeToggle, smokeColorPreview, smokeColorR, smokeColorG, smokeColorB, smokeColorFillR, smokeColorFillG, smokeColorFillB, smokeColorButtonR, smokeColorButtonG, smokeColorButtonB,
+	       smokeOpacityValue, smokeOpacityFill, smokeOpacityButton,
+	       smokeSizeValue, smokeSizeFill, smokeSizeButton,
+	       smokeRiseValue, smokeRiseFill, smokeRiseButton
 end
 
 -- Function to create simple button
@@ -1061,9 +1248,15 @@ local SpeedButtonContainer, SpeedButton, SpeedExpandFrame, SpeedImageLabel, Spee
 local JumpButtonContainer, JumpButton, JumpExpandFrame, JumpImageLabel, JumpLabel, JumpSliderFill, JumpSliderButton, JumpMinusButton, JumpPlusButton = createJumpPowerButton(180)
 local MapButtonContainer, MapButton, MapExpandFrame, MapImageLabel, MapTransparencyLabel, MapSliderFill, MapSliderButton, MapMinusButton, MapPlusButton, 
       TransparencyTab, EffectsTab, TransparencyContent, EffectsContent,
-      FireToggle, FireColor1Preview, FireColor2Preview, FireHeatLabel, FireSizeLabel,
-      SparklesToggle, SparklesColorPreview,
-      SmokeToggle, SmokeColorPreview, SmokeOpacityLabel, SmokeSizeLabel, SmokeRiseLabel = createMapSettingsButton(225)
+      FireToggle, FireColor1Preview, FireColor1R, FireColor1G, FireColor1B, FireColor1FillR, FireColor1FillG, FireColor1FillB, FireColor1ButtonR, FireColor1ButtonG, FireColor1ButtonB,
+      FireColor2Preview, FireColor2R, FireColor2G, FireColor2B, FireColor2FillR, FireColor2FillG, FireColor2FillB, FireColor2ButtonR, FireColor2ButtonG, FireColor2ButtonB,
+      FireHeatValue, FireHeatFill, FireHeatButton,
+      FireSizeValue, FireSizeFill, FireSizeButton,
+      SparklesToggle, SparklesColorPreview, SparklesColorR, SparklesColorG, SparklesColorB, SparklesColorFillR, SparklesColorFillG, SparklesColorFillB, SparklesColorButtonR, SparklesColorButtonG, SparklesColorButtonB,
+      SmokeToggle, SmokeColorPreview, SmokeColorR, SmokeColorG, SmokeColorB, SmokeColorFillR, SmokeColorFillG, SmokeColorFillB, SmokeColorButtonR, SmokeColorButtonG, SmokeColorButtonB,
+      SmokeOpacityValue, SmokeOpacityFill, SmokeOpacityButton,
+      SmokeSizeValue, SmokeSizeFill, SmokeSizeButton,
+      SmokeRiseValue, SmokeRiseFill, SmokeRiseButton = createMapSettingsButton(225)
 
 -- Variables for systems
 local nowe = false
@@ -1099,6 +1292,7 @@ local minTransparency = 0
 local maxTransparency = 1
 local currentTransparency = 0
 local originalTransparencies = {}
+local originalTextureTransparencies = {}
 
 -- Effects settings
 local activeEffects = {}
@@ -1172,7 +1366,7 @@ local function updateButtonPositions()
 
 	-- If Map expanded, add its height
 	if mapExpanded then
-		currentY = currentY + 270 + 5
+		currentY = currentY + 480 + 5
 	else
 		currentY = currentY + 5
 	end
@@ -1382,7 +1576,7 @@ local function updateMapTransparency(newTransparency)
 	})
 	tween:Play()
 
-	-- Apply transparency to all parts in workspace except those with Humanoid
+	-- Apply transparency to all parts and textures in workspace except those with Humanoid
 	for _, obj in pairs(Workspace:GetDescendants()) do
 		if obj:IsA("BasePart") and not obj:FindFirstAncestorWhichIsA("Model"):FindFirstChildOfClass("Humanoid") then
 			-- Store original transparency if not stored yet
@@ -1392,6 +1586,15 @@ local function updateMapTransparency(newTransparency)
 			
 			-- Apply additional transparency to original
 			obj.Transparency = math.clamp(originalTransparencies[obj] + currentTransparency, 0, 1)
+		end
+		
+		-- Apply transparency to textures (Decals, Texture, SurfaceAppearance)
+		if (obj:IsA("Decal") or obj:IsA("Texture") or obj:IsA("SurfaceAppearance")) and not obj:FindFirstAncestorWhichIsA("Model"):FindFirstChildOfClass("Humanoid") then
+			if not originalTextureTransparencies[obj] then
+				originalTextureTransparencies[obj] = obj.Transparency
+			end
+			
+			obj.Transparency = math.clamp(originalTextureTransparencies[obj] + currentTransparency, 0, 1)
 		end
 	end
 end
@@ -1525,7 +1728,7 @@ local function toggleMapExpand()
 		animateIcon(MapImageLabel, true)
 
 		local tween = TweenService:Create(MapExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-			Size = UDim2.new(1, 0, 0, 270)
+			Size = UDim2.new(1, 0, 0, 480)
 		})
 		tween:Play()
 
@@ -1571,8 +1774,8 @@ local function maximizeWindow()
 	MainFrame.BackgroundTransparency = 1
 	
 	local tween = TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-		Size = UDim2.new(0, 300, 0, 450),
-		Position = UDim2.new(0.5, -150, 0.5, -225),
+		Size = UDim2.new(0, 350, 0, 500),
+		Position = UDim2.new(0.5, -175, 0.5, -250),
 		BackgroundTransparency = 0.3
 	})
 	tween:Play()
@@ -2229,6 +2432,104 @@ local function removeAllEffects()
 	activeEffects = {}
 end
 
+-- COLOR PICKER FUNCTIONS
+local function setupColorPicker(colorPreview, rValue, gValue, bValue, rFill, gFill, bFill, rButton, gButton, bButton, onColorChange)
+	local function updateColor()
+		local r = tonumber(rValue.Text) or 0
+		local g = tonumber(gValue.Text) or 0
+		local b = tonumber(bValue.Text) or 0
+		
+		local color = Color3.fromRGB(r, g, b)
+		colorPreview.BackgroundColor3 = color
+		
+		-- Update slider fills
+		rFill.Size = UDim2.new(r / 255, 0, 1, 0)
+		gFill.Size = UDim2.new(g / 255, 0, 1, 0)
+		bFill.Size = UDim2.new(b / 255, 0, 1, 0)
+		
+		if onColorChange then
+			onColorChange(color)
+		end
+	end
+
+	local function setupColorSlider(sliderButton, valueLabel, sliderFill, maxValue, updateCallback)
+		local dragging = false
+		
+		sliderButton.MouseButton1Down:Connect(function()
+			dragging = true
+		end)
+		
+		UserInputService.InputChanged:Connect(function(input)
+			if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+				local sliderAbsolutePosition = sliderButton.AbsolutePosition.X
+				local sliderAbsoluteSize = sliderButton.AbsoluteSize.X
+				local mouseX = input.Position.X
+				
+				local relativeX = math.clamp(mouseX - sliderAbsolutePosition, 0, sliderAbsoluteSize)
+				local percentage = relativeX / sliderAbsoluteSize
+				
+				local newValue = math.floor(percentage * maxValue)
+				valueLabel.Text = tostring(newValue)
+				updateCallback()
+			end
+		end)
+		
+		UserInputService.InputEnded:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				dragging = false
+			end
+		end)
+	end
+
+	-- Setup RGB sliders
+	setupColorSlider(rButton, rValue, rFill, 255, updateColor)
+	setupColorSlider(gButton, gValue, gFill, 255, updateColor)
+	setupColorSlider(bButton, bValue, bFill, 255, updateColor)
+	
+	-- Initialize
+	updateColor()
+end
+
+-- PARAMETER SLIDER FUNCTION
+local function setupParameterSlider(valueLabel, sliderFill, sliderButton, minValue, maxValue, decimalPlaces, onValueChange)
+	local dragging = false
+	
+	sliderButton.MouseButton1Down:Connect(function()
+		dragging = true
+	end)
+	
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local sliderAbsolutePosition = sliderButton.AbsolutePosition.X
+			local sliderAbsoluteSize = sliderButton.AbsoluteSize.X
+			local mouseX = input.Position.X
+			
+			local relativeX = math.clamp(mouseX - sliderAbsolutePosition, 0, sliderAbsoluteSize)
+			local percentage = relativeX / sliderAbsoluteSize
+			
+			local newValue = minValue + (maxValue - minValue) * percentage
+			if decimalPlaces == 0 then
+				newValue = math.floor(newValue)
+			else
+				newValue = math.floor(newValue * (10 ^ decimalPlaces)) / (10 ^ decimalPlaces)
+			end
+			
+			valueLabel.Text = tostring(newValue)
+			sliderFill.Size = UDim2.new(percentage, 0, 1, 0)
+			
+			if onValueChange then
+				onValueChange(newValue)
+			end
+		end
+	end)
+	
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = false
+		end
+	end)
+end
+
 -- SPEED SLIDER FUNCTIONS
 local function setupFlySpeedSlider()
 	local dragging = false
@@ -2514,6 +2815,71 @@ setupWalkSpeedSlider()
 setupJumpPowerSlider()
 setupMapTransparencySlider()
 
+-- Set up color pickers
+setupColorPicker(FireColor1Preview, FireColor1R, FireColor1G, FireColor1B, FireColor1FillR, FireColor1FillG, FireColor1FillB, FireColor1ButtonR, FireColor1ButtonG, FireColor1ButtonB, function(color)
+	fireColor1 = color
+	if fireEnabled then
+		updateFireEffect()
+	end
+end)
+
+setupColorPicker(FireColor2Preview, FireColor2R, FireColor2G, FireColor2B, FireColor2FillR, FireColor2FillG, FireColor2FillB, FireColor2ButtonR, FireColor2ButtonG, FireColor2ButtonB, function(color)
+	fireColor2 = color
+	if fireEnabled then
+		updateFireEffect()
+	end
+end)
+
+setupColorPicker(SparklesColorPreview, SparklesColorR, SparklesColorG, SparklesColorB, SparklesColorFillR, SparklesColorFillG, SparklesColorFillB, SparklesColorButtonR, SparklesColorButtonG, SparklesColorButtonB, function(color)
+	sparklesColor = color
+	if sparklesEnabled then
+		updateSparklesEffect()
+	end
+end)
+
+setupColorPicker(SmokeColorPreview, SmokeColorR, SmokeColorG, SmokeColorB, SmokeColorFillR, SmokeColorFillG, SmokeColorFillB, SmokeColorButtonR, SmokeColorButtonG, SmokeColorButtonB, function(color)
+	smokeColor = color
+	if smokeEnabled then
+		updateSmokeEffect()
+	end
+end)
+
+-- Set up parameter sliders
+setupParameterSlider(FireHeatValue, FireHeatFill, FireHeatButton, 1, 20, 1, function(value)
+	fireHeat = value
+	if fireEnabled then
+		updateFireEffect()
+	end
+end)
+
+setupParameterSlider(FireSizeValue, FireSizeFill, FireSizeButton, 1, 20, 1, function(value)
+	fireSize = value
+	if fireEnabled then
+		updateFireEffect()
+	end
+end)
+
+setupParameterSlider(SmokeOpacityValue, SmokeOpacityFill, SmokeOpacityButton, 0, 1, 2, function(value)
+	smokeOpacity = value
+	if smokeEnabled then
+		updateSmokeEffect()
+	end
+end)
+
+setupParameterSlider(SmokeSizeValue, SmokeSizeFill, SmokeSizeButton, 1, 10, 1, function(value)
+	smokeSize = value
+	if smokeEnabled then
+		updateSmokeEffect()
+	end
+end)
+
+setupParameterSlider(SmokeRiseValue, SmokeRiseFill, SmokeRiseButton, 1, 10, 1, function(value)
+	smokeRiseVelocity = value
+	if smokeEnabled then
+		updateSmokeEffect()
+	end
+end)
+
 -- Initialize speeds and statuses
 updateFlySpeed(1)
 updateWalkSpeed(16)
@@ -2530,8 +2896,8 @@ MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.BackgroundTransparency = 1
 
 local openTween = TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-	Size = UDim2.new(0, 300, 0, 450),
-	Position = UDim2.new(0.5, -150, 0.5, -225),
+	Size = UDim2.new(0, 350, 0, 500),
+	Position = UDim2.new(0.5, -175, 0.5, -250),
 	BackgroundTransparency = 0.3
 })
 openTween:Play()
