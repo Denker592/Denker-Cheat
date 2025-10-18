@@ -1,64 +1,112 @@
-local Version = "5.24"
+local Version = "5.23 beta"
 
--- Ожидаем загрузку игры
-wait(2)
-
--- Базовые проверки
-if not game:IsLoaded() then
-    game.Loaded:Wait()
-end
-
--- Ожидаем появление игрока
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local Lighting = game:GetService("Lighting")
+local CoreGui = game:GetService("CoreGui")
+
 local player = Players.LocalPlayer
-if not player then
-    repeat wait() until Players.LocalPlayer
-    player = Players.LocalPlayer
-end
+local mouse = player:GetMouse()
 
--- Ожидаем PlayerGui
-local playerGui = player:FindFirstChild("PlayerGui")
-if not playerGui then
+-- Проверяем, существует ли уже PlayerGui
+if not player:FindFirstChild("PlayerGui") then
     repeat wait() until player:FindFirstChild("PlayerGui")
-    playerGui = player.PlayerGui
 end
 
--- Создаем основной GUI
+-- Create main GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "DenkerChetGUI"
-ScreenGui.Parent = playerGui
+ScreenGui.Parent = CoreGui -- Используем CoreGui вместо PlayerGui для большей надежности
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.ResetOnSpawn = false
 
--- Главный фрейм
-local MainFrame = Instance.new("Frame")
+-- Floating button (initially hidden)
+local FloatingButton = Instance.new("ImageButton")
+FloatingButton.Name = "FloatingButton"
+FloatingButton.Size = UDim2.new(0, 50, 0, 50)
+FloatingButton.Position = UDim2.new(0, 20, 0, 20)
+FloatingButton.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+FloatingButton.BackgroundTransparency = 0.2
+FloatingButton.Image = "rbxthumb://type=Asset&id=85901190532963&w=150&h=150"
+FloatingButton.Visible = false
+FloatingButton.ZIndex = 10
+FloatingButton.Parent = ScreenGui
+
+-- Round corners for floating button
+local FloatingCorner = Instance.new("UICorner")
+FloatingCorner.CornerRadius = UDim.new(0, 12)
+FloatingCorner.Parent = FloatingButton
+
+-- Stroke for floating button
+local FloatingStroke = Instance.new("UIStroke")
+FloatingStroke.Color = Color3.fromRGB(80, 80, 80)
+FloatingStroke.Thickness = 2
+FloatingStroke.Transparency = 0.3
+FloatingStroke.Parent = FloatingButton
+
+-- Shadow for floating button
+local FloatingShadow = Instance.new("ImageLabel")
+FloatingShadow.Name = "Shadow"
+FloatingShadow.Size = UDim2.new(1, 15, 1, 15)
+FloatingShadow.Position = UDim2.new(0, -7, 0, -7)
+FloatingShadow.BackgroundTransparency = 1
+FloatingShadow.Image = "rbxassetid://1316045217"
+FloatingShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+FloatingShadow.ImageTransparency = 0.8
+FloatingShadow.ScaleType = Enum.ScaleType.Slice
+FloatingShadow.SliceCenter = Rect.new(10, 10, 118, 118)
+FloatingShadow.ZIndex = 9
+FloatingShadow.Parent = FloatingButton
+
+-- Main frame with semi-transparent background
+local MainFrame = Instance.new("ScrollingFrame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 300, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
+MainFrame.Size = UDim2.new(0, 350, 0, 500)
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -250)
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MainFrame.BackgroundTransparency = 0.3
 MainFrame.BorderSizePixel = 0
+MainFrame.ZIndex = 2
+MainFrame.ScrollBarImageTransparency = 1
 MainFrame.Parent = ScreenGui
 
--- Скругленные углы
+-- Round corners
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 12)
 UICorner.Parent = MainFrame
 
--- Обводка
+-- Window shadow
+local ShadowEffect = Instance.new("ImageLabel")
+ShadowEffect.Name = "Shadow"
+ShadowEffect.Size = UDim2.new(1, 20, 1, 20)
+ShadowEffect.Position = UDim2.new(0, -10, 0, -10)
+ShadowEffect.BackgroundTransparency = 1
+ShadowEffect.Image = "rbxassetid://1316045217"
+ShadowEffect.ImageColor3 = Color3.fromRGB(0, 0, 0)
+ShadowEffect.ImageTransparency = 0.8
+ShadowEffect.ScaleType = Enum.ScaleType.Slice
+ShadowEffect.SliceCenter = Rect.new(10, 10, 118, 118)
+ShadowEffect.ZIndex = 1
+ShadowEffect.Parent = MainFrame
+
+-- Inner stroke
 local UIStroke = Instance.new("UIStroke")
 UIStroke.Color = Color3.fromRGB(80, 80, 80)
 UIStroke.Thickness = 1
 UIStroke.Transparency = 0.5
 UIStroke.Parent = MainFrame
 
--- Заголовок
+-- Title bar (for dragging)
 local TitleBar = Instance.new("Frame")
 TitleBar.Name = "TitleBar"
 TitleBar.Size = UDim2.new(1, 0, 0, 35)
 TitleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 TitleBar.BackgroundTransparency = 0.2
 TitleBar.BorderSizePixel = 0
+TitleBar.ZIndex = 3
 TitleBar.Parent = MainFrame
 
 local TitleCorner = Instance.new("UICorner")
@@ -74,9 +122,27 @@ TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleLabel.TextSize = 14
 TitleLabel.Font = Enum.Font.GothamBold
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.ZIndex = 3
 TitleLabel.Parent = TitleBar
 
--- Кнопка закрытия
+-- Minimize button
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Size = UDim2.new(0, 25, 0, 25)
+MinimizeButton.Position = UDim2.new(1, -60, 0.5, -12)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+MinimizeButton.BackgroundTransparency = 0.3
+MinimizeButton.Text = "−"
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.TextSize = 18
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.ZIndex = 3
+MinimizeButton.Parent = TitleBar
+
+local MinimizeCorner = Instance.new("UICorner")
+MinimizeCorner.CornerRadius = UDim.new(0, 6)
+MinimizeCorner.Parent = MinimizeButton
+
+-- Close button
 local CloseButton = Instance.new("TextButton")
 CloseButton.Size = UDim2.new(0, 25, 0, 25)
 CloseButton.Position = UDim2.new(1, -30, 0.5, -12)
@@ -86,244 +152,1963 @@ CloseButton.Text = "×"
 CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseButton.TextSize = 18
 CloseButton.Font = Enum.Font.GothamBold
+CloseButton.ZIndex = 3
 CloseButton.Parent = TitleBar
 
 local CloseCorner = Instance.new("UICorner")
 CloseCorner.CornerRadius = UDim.new(0, 6)
 CloseCorner.Parent = CloseButton
 
--- Контейнер для кнопок
+-- ScrollingFrame for scrolling
+local ScrollFrame = Instance.new("ScrollingFrame")
+ScrollFrame.Name = "ScrollFrame"
+ScrollFrame.Size = UDim2.new(1, -20, 1, -45)
+ScrollFrame.Position = UDim2.new(0, 10, 0, 40)
+ScrollFrame.BackgroundTransparency = 1
+ScrollFrame.BorderSizePixel = 0
+ScrollFrame.ScrollBarThickness = 6
+ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(120, 120, 120)
+ScrollFrame.ScrollBarImageTransparency = 0.5
+ScrollFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
+ScrollFrame.ZIndex = 3
+ScrollFrame.Parent = MainFrame
+
+-- Container for all buttons inside ScrollingFrame
 local ContentFrame = Instance.new("Frame")
 ContentFrame.Name = "ContentFrame"
-ContentFrame.Size = UDim2.new(1, -20, 1, -45)
-ContentFrame.Position = UDim2.new(0, 10, 0, 40)
+ContentFrame.Size = UDim2.new(1, 0, 0, 0)
+ContentFrame.Position = UDim2.new(0, 0, 0, 0)
 ContentFrame.BackgroundTransparency = 1
-ContentFrame.Parent = MainFrame
+ContentFrame.ZIndex = 3
+ContentFrame.Parent = ScrollFrame
 
--- Функция для создания кнопок
-local function createButton(text, positionY)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, 0, 0, 40)
-    button.Position = UDim2.new(0, 0, 0, positionY)
-    button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    button.BackgroundTransparency = 0.2
-    button.Text = "   " .. text
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 13
-    button.Font = Enum.Font.Gotham
-    button.TextXAlignment = Enum.TextXAlignment.Left
-    button.Parent = ContentFrame
+-- Function to update ContentFrame size and CanvasSize
+local function updateContentSize()
+	local totalHeight = 0
 
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
-    corner.Parent = button
+	-- Calculate total height of all elements
+	for _, child in ipairs(ContentFrame:GetChildren()) do
+		if child:IsA("Frame") then
+			totalHeight = totalHeight + child.Size.Y.Offset
+		end
+	end
 
-    local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(100, 100, 100)
-    stroke.Thickness = 1
-    stroke.Transparency = 0.3
-    stroke.Parent = button
-
-    return button
+	-- Set ContentFrame size and CanvasSize
+	ContentFrame.Size = UDim2.new(1, 0, 0, totalHeight)
+	ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, totalHeight)
 end
 
--- Создаем кнопки
-local FlyButton = createButton("🛸 Fly System: Disabled", 0)
-local ESPButton = createButton("🎯 ESP: Disabled", 45)
-local NoclipButton = createButton("🚫 Noclip: Disabled", 90)
-local SpeedButton = createButton("🏃‍♂️ WalkSpeed: 16", 135)
-local JumpButton = createButton("🦘 JumpPower: 50", 180)
+-- Function to create dark gray buttons with text on left and ImageLabel on right
+local function createExpandableButton(text, positionY)
+	local buttonContainer = Instance.new("Frame")
+	buttonContainer.Size = UDim2.new(1, 0, 0, 40)
+	buttonContainer.Position = UDim2.new(0, 0, 0, positionY)
+	buttonContainer.BackgroundTransparency = 1
+	buttonContainer.ZIndex = 3
+	buttonContainer.Parent = ContentFrame
 
--- Переменные
-local flyEnabled = false
-local espEnabled = false
+	local button = Instance.new("TextButton")
+	button.Size = UDim2.new(1, 0, 1, 0)
+	button.Position = UDim2.new(0, 0, 0, 0)
+	button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	button.BackgroundTransparency = 0.2
+	button.Text = "   " .. text
+	button.TextColor3 = Color3.fromRGB(255, 255, 255)
+	button.TextSize = 13
+	button.Font = Enum.Font.Gotham
+	button.TextXAlignment = Enum.TextXAlignment.Left
+	button.ZIndex = 3
+	button.Parent = buttonContainer
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 8)
+	corner.Parent = button
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(100, 100, 100)
+	stroke.Thickness = 1
+	stroke.Transparency = 0.3
+	stroke.Parent = button
+
+	-- ImageLabel for right icon
+	local imageLabel = Instance.new("ImageLabel")
+	imageLabel.Size = UDim2.new(0, 20, 0, 20)
+	imageLabel.Position = UDim2.new(1, -30, 0.5, -10)
+	imageLabel.BackgroundTransparency = 1
+	imageLabel.Image = "rbxassetid://11552476835"
+	imageLabel.ZIndex = 3
+	imageLabel.Parent = button
+
+	-- Container for expandable content (hidden by default)
+	local expandFrame = Instance.new("Frame")
+	expandFrame.Size = UDim2.new(1, 0, 0, 0)
+	expandFrame.Position = UDim2.new(0, 0, 1, 10)
+	expandFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	expandFrame.BackgroundTransparency = 0.1
+	expandFrame.BorderSizePixel = 0
+	expandFrame.ClipsDescendants = true
+	expandFrame.ZIndex = 3
+	expandFrame.Visible = false
+	expandFrame.Parent = buttonContainer
+
+	local expandCorner = Instance.new("UICorner")
+	expandCorner.CornerRadius = UDim.new(0, 6)
+	expandCorner.Parent = expandFrame
+
+	local expandStroke = Instance.new("UIStroke")
+	expandStroke.Color = Color3.fromRGB(80, 80, 80)
+	expandStroke.Thickness = 1
+	expandStroke.Transparency = 0.3
+	expandStroke.Parent = expandFrame
+
+	return buttonContainer, button, expandFrame, imageLabel
+end
+
+-- Function to create RGB color picker
+local function createColorPicker(parent, position, colorName, defaultColor)
+	local colorContainer = Instance.new("Frame")
+	colorContainer.Size = UDim2.new(1, 0, 0, 90)
+	colorContainer.Position = position
+	colorContainer.BackgroundTransparency = 1
+	colorContainer.ZIndex = 4
+	colorContainer.Parent = parent
+
+	-- Color name label
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Size = UDim2.new(1, 0, 0, 15)
+	nameLabel.Position = UDim2.new(0, 0, 0, 0)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Text = colorName
+	nameLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	nameLabel.TextSize = 10
+	nameLabel.Font = Enum.Font.Gotham
+	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+	nameLabel.ZIndex = 4
+	nameLabel.Parent = colorContainer
+
+	-- Color preview
+	local colorPreview = Instance.new("Frame")
+	colorPreview.Size = UDim2.new(0, 40, 0, 40)
+	colorPreview.Position = UDim2.new(0, 0, 0, 20)
+	colorPreview.BackgroundColor3 = defaultColor
+	colorPreview.BorderSizePixel = 0
+	colorPreview.ZIndex = 4
+	colorPreview.Parent = colorContainer
+
+	local previewCorner = Instance.new("UICorner")
+	previewCorner.CornerRadius = UDim.new(0, 4)
+	previewCorner.Parent = colorPreview
+
+	local previewStroke = Instance.new("UIStroke")
+	previewStroke.Color = Color3.fromRGB(255, 255, 255)
+	previewStroke.Thickness = 1
+	previewStroke.Transparency = 0.3
+	previewStroke.Parent = colorPreview
+
+	-- RGB sliders container
+	local slidersContainer = Instance.new("Frame")
+	slidersContainer.Size = UDim2.new(1, -50, 0, 70)
+	slidersContainer.Position = UDim2.new(0, 45, 0, 15)
+	slidersContainer.BackgroundTransparency = 1
+	slidersContainer.ZIndex = 4
+	slidersContainer.Parent = colorContainer
+
+	-- Red slider
+	local redContainer = Instance.new("Frame")
+	redContainer.Size = UDim2.new(1, 0, 0, 20)
+	redContainer.Position = UDim2.new(0, 0, 0, 0)
+	redContainer.BackgroundTransparency = 1
+	redContainer.ZIndex = 4
+	redContainer.Parent = slidersContainer
+
+	local redLabel = Instance.new("TextLabel")
+	redLabel.Size = UDim2.new(0, 20, 1, 0)
+	redLabel.Position = UDim2.new(0, 0, 0, 0)
+	redLabel.BackgroundTransparency = 1
+	redLabel.Text = "R:"
+	redLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+	redLabel.TextSize = 9
+	redLabel.Font = Enum.Font.GothamBold
+	redLabel.TextXAlignment = Enum.TextXAlignment.Left
+	redLabel.ZIndex = 4
+	redLabel.Parent = redContainer
+
+	local redValue = Instance.new("TextLabel")
+	redValue.Size = UDim2.new(0, 25, 1, 0)
+	redValue.Position = UDim2.new(1, -25, 0, 0)
+	redValue.BackgroundTransparency = 1
+	redValue.Text = "255"
+	redValue.TextColor3 = Color3.fromRGB(255, 255, 255)
+	redValue.TextSize = 9
+	redValue.Font = Enum.Font.Gotham
+	redValue.TextXAlignment = Enum.TextXAlignment.Right
+	redValue.ZIndex = 4
+	redValue.Parent = redContainer
+
+	local redSliderBg = Instance.new("Frame")
+	redSliderBg.Size = UDim2.new(1, -50, 0, 10)
+	redSliderBg.Position = UDim2.new(0, 25, 0, 5)
+	redSliderBg.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	redSliderBg.BorderSizePixel = 0
+	redSliderBg.ZIndex = 4
+	redSliderBg.Parent = redContainer
+
+	local redSliderCorner = Instance.new("UICorner")
+	redSliderCorner.CornerRadius = UDim.new(0, 3)
+	redSliderCorner.Parent = redSliderBg
+
+	local redSliderFill = Instance.new("Frame")
+	redSliderFill.Size = UDim2.new(1, 0, 1, 0)
+	redSliderFill.Position = UDim2.new(0, 0, 0, 0)
+	redSliderFill.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+	redSliderFill.BorderSizePixel = 0
+	redSliderFill.ZIndex = 5
+	redSliderFill.Parent = redSliderBg
+
+	local redSliderCorner2 = Instance.new("UICorner")
+	redSliderCorner2.CornerRadius = UDim.new(0, 3)
+	redSliderCorner2.Parent = redSliderFill
+
+	local redSliderButton = Instance.new("TextButton")
+	redSliderButton.Size = UDim2.new(1, 0, 1, 0)
+	redSliderButton.Position = UDim2.new(0, 0, 0, 0)
+	redSliderButton.BackgroundTransparency = 1
+	redSliderButton.Text = ""
+	redSliderButton.ZIndex = 6
+	redSliderButton.Parent = redSliderBg
+
+	-- Green slider
+	local greenContainer = Instance.new("Frame")
+	greenContainer.Size = UDim2.new(1, 0, 0, 20)
+	greenContainer.Position = UDim2.new(0, 0, 0, 25)
+	greenContainer.BackgroundTransparency = 1
+	greenContainer.ZIndex = 4
+	greenContainer.Parent = slidersContainer
+
+	local greenLabel = Instance.new("TextLabel")
+	greenLabel.Size = UDim2.new(0, 20, 1, 0)
+	greenLabel.Position = UDim2.new(0, 0, 0, 0)
+	greenLabel.BackgroundTransparency = 1
+	greenLabel.Text = "G:"
+	greenLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+	greenLabel.TextSize = 9
+	greenLabel.Font = Enum.Font.GothamBold
+	greenLabel.TextXAlignment = Enum.TextXAlignment.Left
+	greenLabel.ZIndex = 4
+	greenLabel.Parent = greenContainer
+
+	local greenValue = Instance.new("TextLabel")
+	greenValue.Size = UDim2.new(0, 25, 1, 0)
+	greenValue.Position = UDim2.new(1, -25, 0, 0)
+	greenValue.BackgroundTransparency = 1
+	greenValue.Text = "255"
+	greenValue.TextColor3 = Color3.fromRGB(255, 255, 255)
+	greenValue.TextSize = 9
+	greenValue.Font = Enum.Font.Gotham
+	greenValue.TextXAlignment = Enum.TextXAlignment.Right
+	greenValue.ZIndex = 4
+	greenValue.Parent = greenContainer
+
+	local greenSliderBg = Instance.new("Frame")
+	greenSliderBg.Size = UDim2.new(1, -50, 0, 10)
+	greenSliderBg.Position = UDim2.new(0, 25, 0, 5)
+	greenSliderBg.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	greenSliderBg.BorderSizePixel = 0
+	greenSliderBg.ZIndex = 4
+	greenSliderBg.Parent = greenContainer
+
+	local greenSliderCorner = Instance.new("UICorner")
+	greenSliderCorner.CornerRadius = UDim.new(0, 3)
+	greenSliderCorner.Parent = greenSliderBg
+
+	local greenSliderFill = Instance.new("Frame")
+	greenSliderFill.Size = UDim2.new(1, 0, 1, 0)
+	greenSliderFill.Position = UDim2.new(0, 0, 0, 0)
+	greenSliderFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+	greenSliderFill.BorderSizePixel = 0
+	greenSliderFill.ZIndex = 5
+	greenSliderFill.Parent = greenSliderBg
+
+	local greenSliderCorner2 = Instance.new("UICorner")
+	greenSliderCorner2.CornerRadius = UDim.new(0, 3)
+	greenSliderCorner2.Parent = greenSliderFill
+
+	local greenSliderButton = Instance.new("TextButton")
+	greenSliderButton.Size = UDim2.new(1, 0, 1, 0)
+	greenSliderButton.Position = UDim2.new(0, 0, 0, 0)
+	greenSliderButton.BackgroundTransparency = 1
+	greenSliderButton.Text = ""
+	greenSliderButton.ZIndex = 6
+	greenSliderButton.Parent = greenSliderBg
+
+	-- Blue slider
+	local blueContainer = Instance.new("Frame")
+	blueContainer.Size = UDim2.new(1, 0, 0, 20)
+	blueContainer.Position = UDim2.new(0, 0, 0, 50)
+	blueContainer.BackgroundTransparency = 1
+	blueContainer.ZIndex = 4
+	blueContainer.Parent = slidersContainer
+
+	local blueLabel = Instance.new("TextLabel")
+	blueLabel.Size = UDim2.new(0, 20, 1, 0)
+	blueLabel.Position = UDim2.new(0, 0, 0, 0)
+	blueLabel.BackgroundTransparency = 1
+	blueLabel.Text = "B:"
+	blueLabel.TextColor3 = Color3.fromRGB(100, 100, 255)
+	blueLabel.TextSize = 9
+	blueLabel.Font = Enum.Font.GothamBold
+	blueLabel.TextXAlignment = Enum.TextXAlignment.Left
+	blueLabel.ZIndex = 4
+	blueLabel.Parent = blueContainer
+
+	local blueValue = Instance.new("TextLabel")
+	blueValue.Size = UDim2.new(0, 25, 1, 0)
+	blueValue.Position = UDim2.new(1, -25, 0, 0)
+	blueValue.BackgroundTransparency = 1
+	blueValue.Text = "255"
+	blueValue.TextColor3 = Color3.fromRGB(255, 255, 255)
+	blueValue.TextSize = 9
+	blueValue.Font = Enum.Font.Gotham
+	blueValue.TextXAlignment = Enum.TextXAlignment.Right
+	blueValue.ZIndex = 4
+	blueValue.Parent = blueContainer
+
+	local blueSliderBg = Instance.new("Frame")
+	blueSliderBg.Size = UDim2.new(1, -50, 0, 10)
+	blueSliderBg.Position = UDim2.new(0, 25, 0, 5)
+	blueSliderBg.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	blueSliderBg.BorderSizePixel = 0
+	blueSliderBg.ZIndex = 4
+	blueSliderBg.Parent = blueContainer
+
+	local blueSliderCorner = Instance.new("UICorner")
+	blueSliderCorner.CornerRadius = UDim.new(0, 3)
+	blueSliderCorner.Parent = blueSliderBg
+
+	local blueSliderFill = Instance.new("Frame")
+	blueSliderFill.Size = UDim2.new(1, 0, 1, 0)
+	blueSliderFill.Position = UDim2.new(0, 0, 0, 0)
+	blueSliderFill.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+	blueSliderFill.BorderSizePixel = 0
+	blueSliderFill.ZIndex = 5
+	blueSliderFill.Parent = blueSliderBg
+
+	local blueSliderCorner2 = Instance.new("UICorner")
+	blueSliderCorner2.CornerRadius = UDim.new(0, 3)
+	blueSliderCorner2.Parent = blueSliderFill
+
+	local blueSliderButton = Instance.new("TextButton")
+	blueSliderButton.Size = UDim2.new(1, 0, 1, 0)
+	blueSliderButton.Position = UDim2.new(0, 0, 0, 0)
+	blueSliderButton.BackgroundTransparency = 1
+	blueSliderButton.Text = ""
+	blueSliderButton.ZIndex = 6
+	blueSliderButton.Parent = blueSliderBg
+
+	return colorContainer, colorPreview, redValue, greenValue, blueValue, redSliderFill, greenSliderFill, blueSliderFill, redSliderButton, greenSliderButton, blueSliderButton
+end
+
+-- Function to create parameter slider
+local function createParameterSlider(parent, position, parameterName, minValue, maxValue, defaultValue, decimalPlaces)
+	local sliderContainer = Instance.new("Frame")
+	sliderContainer.Size = UDim2.new(1, 0, 0, 30)
+	sliderContainer.Position = position
+	sliderContainer.BackgroundTransparency = 1
+	sliderContainer.ZIndex = 4
+	sliderContainer.Parent = parent
+
+	-- Parameter name and value
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Size = UDim2.new(0.6, 0, 0, 15)
+	nameLabel.Position = UDim2.new(0, 0, 0, 0)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Text = parameterName
+	nameLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	nameLabel.TextSize = 9
+	nameLabel.Font = Enum.Font.Gotham
+	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+	nameLabel.ZIndex = 4
+	nameLabel.Parent = sliderContainer
+
+	local valueLabel = Instance.new("TextLabel")
+	valueLabel.Size = UDim2.new(0.4, 0, 0, 15)
+	valueLabel.Position = UDim2.new(0.6, 0, 0, 0)
+	valueLabel.BackgroundTransparency = 1
+	valueLabel.Text = tostring(defaultValue)
+	valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	valueLabel.TextSize = 9
+	valueLabel.Font = Enum.Font.Gotham
+	valueLabel.TextXAlignment = Enum.TextXAlignment.Right
+	valueLabel.ZIndex = 4
+	valueLabel.Parent = sliderContainer
+
+	-- Slider background
+	local sliderBackground = Instance.new("Frame")
+	sliderBackground.Size = UDim2.new(1, 0, 0, 10)
+	sliderBackground.Position = UDim2.new(0, 0, 0, 20)
+	sliderBackground.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	sliderBackground.BorderSizePixel = 0
+	sliderBackground.ZIndex = 4
+	sliderBackground.Parent = sliderContainer
+
+	local sliderCorner = Instance.new("UICorner")
+	sliderCorner.CornerRadius = UDim.new(0, 3)
+	sliderCorner.Parent = sliderBackground
+
+	-- Slider fill
+	local sliderFill = Instance.new("Frame")
+	sliderFill.Size = UDim2.new(0, 0, 1, 0)
+	sliderFill.Position = UDim2.new(0, 0, 0, 0)
+	sliderFill.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+	sliderFill.BorderSizePixel = 0
+	sliderFill.ZIndex = 5
+	sliderFill.Parent = sliderBackground
+
+	local fillCorner = Instance.new("UICorner")
+	fillCorner.CornerRadius = UDim.new(0, 3)
+	fillCorner.Parent = sliderFill
+
+	-- Slider button
+	local sliderButton = Instance.new("TextButton")
+	sliderButton.Size = UDim2.new(1, 0, 1, 0)
+	sliderButton.Position = UDim2.new(0, 0, 0, 0)
+	sliderButton.BackgroundTransparency = 1
+	sliderButton.Text = ""
+	sliderButton.ZIndex = 6
+	sliderButton.Parent = sliderBackground
+
+	return sliderContainer, valueLabel, sliderFill, sliderButton, minValue, maxValue, decimalPlaces
+end
+
+-- Function to create Fly button with dropdown content
+local function createFlyButton(positionY)
+	local buttonContainer, button, expandFrame, imageLabel = createExpandableButton("🛸 Fly System", positionY)
+
+	-- Fly toggle button
+	local flyToggleButton = Instance.new("TextButton")
+	flyToggleButton.Size = UDim2.new(1, -10, 0, 30)
+	flyToggleButton.Position = UDim2.new(0, 5, 0, 5)
+	flyToggleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	flyToggleButton.BackgroundTransparency = 0.2
+	flyToggleButton.Text = "Enable Fly"
+	flyToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	flyToggleButton.TextSize = 12
+	flyToggleButton.Font = Enum.Font.Gotham
+	flyToggleButton.ZIndex = 4
+	flyToggleButton.Parent = expandFrame
+
+	local flyToggleCorner = Instance.new("UICorner")
+	flyToggleCorner.CornerRadius = UDim.new(0, 4)
+	flyToggleCorner.Parent = flyToggleButton
+
+	-- Fly status indicator
+	local flyStatusLabel = Instance.new("TextLabel")
+	flyStatusLabel.Size = UDim2.new(1, -10, 0, 20)
+	flyStatusLabel.Position = UDim2.new(0, 5, 0, 40)
+	flyStatusLabel.BackgroundTransparency = 1
+	flyStatusLabel.Text = "Status: ❌ Disabled"
+	flyStatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+	flyStatusLabel.TextSize = 10
+	flyStatusLabel.Font = Enum.Font.Gotham
+	flyStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+	flyStatusLabel.ZIndex = 4
+	flyStatusLabel.Parent = expandFrame
+
+	-- Speed slider
+	local speedSliderContainer = Instance.new("Frame")
+	speedSliderContainer.Size = UDim2.new(1, -10, 0, 40)
+	speedSliderContainer.Position = UDim2.new(0, 5, 0, 65)
+	speedSliderContainer.BackgroundTransparency = 1
+	speedSliderContainer.ZIndex = 4
+	speedSliderContainer.Parent = expandFrame
+
+	local speedLabel = Instance.new("TextLabel")
+	speedLabel.Size = UDim2.new(1, 0, 0, 15)
+	speedLabel.Position = UDim2.new(0, 0, 0, 0)
+	speedLabel.BackgroundTransparency = 1
+	speedLabel.Text = "Fly Speed: 1"
+	speedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	speedLabel.TextSize = 10
+	speedLabel.Font = Enum.Font.Gotham
+	speedLabel.TextXAlignment = Enum.TextXAlignment.Left
+	speedLabel.ZIndex = 4
+	speedLabel.Parent = speedSliderContainer
+
+	-- Slider container
+	local sliderBackground = Instance.new("Frame")
+	sliderBackground.Size = UDim2.new(1, 0, 0, 20)
+	sliderBackground.Position = UDim2.new(0, 0, 0, 20)
+	sliderBackground.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	sliderBackground.BorderSizePixel = 0
+	sliderBackground.ZIndex = 4
+	sliderBackground.Parent = speedSliderContainer
+
+	local sliderCorner = Instance.new("UICorner")
+	sliderCorner.CornerRadius = UDim.new(0, 4)
+	sliderCorner.Parent = sliderBackground
+
+	local sliderFill = Instance.new("Frame")
+	sliderFill.Size = UDim2.new(0, 0, 1, 0)
+	sliderFill.Position = UDim2.new(0, 0, 0, 0)
+	sliderFill.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+	sliderFill.BorderSizePixel = 0
+	sliderFill.ZIndex = 5
+	sliderFill.Parent = sliderBackground
+
+	local fillCorner = Instance.new("UICorner")
+	fillCorner.CornerRadius = UDim.new(0, 4)
+	fillCorner.Parent = sliderFill
+
+	local sliderButton = Instance.new("TextButton")
+	sliderButton.Size = UDim2.new(1, 0, 1, 0)
+	sliderButton.Position = UDim2.new(0, 0, 0, 0)
+	sliderButton.BackgroundTransparency = 1
+	sliderButton.Text = ""
+	sliderButton.ZIndex = 6
+	sliderButton.Parent = sliderBackground
+
+	-- Quick adjustment buttons
+	local speedControls = Instance.new("Frame")
+	speedControls.Size = UDim2.new(1, 0, 0, 15)
+	speedControls.Position = UDim2.new(0, 0, 0, 45)
+	speedControls.BackgroundTransparency = 1
+	speedControls.ZIndex = 4
+	speedControls.Parent = speedSliderContainer
+
+	local minusButton = Instance.new("TextButton")
+	minusButton.Size = UDim2.new(0, 20, 1, 0)
+	minusButton.Position = UDim2.new(0, 0, 0, 0)
+	minusButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	minusButton.BackgroundTransparency = 0.3
+	minusButton.Text = "-"
+	minusButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	minusButton.TextSize = 12
+	minusButton.Font = Enum.Font.GothamBold
+	minusButton.ZIndex = 4
+	minusButton.Parent = speedControls
+
+	local minusCorner = Instance.new("UICorner")
+	minusCorner.CornerRadius = UDim.new(0, 3)
+	minusCorner.Parent = minusButton
+
+	local plusButton = Instance.new("TextButton")
+	plusButton.Size = UDim2.new(0, 20, 1, 0)
+	plusButton.Position = UDim2.new(1, -20, 0, 0)
+	plusButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	plusButton.BackgroundTransparency = 0.3
+	plusButton.Text = "+"
+	plusButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	plusButton.TextSize = 12
+	plusButton.Font = Enum.Font.GothamBold
+	plusButton.ZIndex = 4
+	plusButton.Parent = speedControls
+
+	local plusCorner = Instance.new("UICorner")
+	plusCorner.CornerRadius = UDim.new(0, 3)
+	plusCorner.Parent = plusButton
+
+	return buttonContainer, button, expandFrame, imageLabel, flyToggleButton, flyStatusLabel, speedLabel, sliderFill, sliderButton, minusButton, plusButton
+end
+
+-- Function to create WalkSpeed button with slider
+local function createWalkSpeedButton(positionY)
+	local buttonContainer, button, expandFrame, imageLabel = createExpandableButton("🏃‍♂️ WalkSpeed: 16", positionY)
+
+	-- Speed label
+	local speedLabel = Instance.new("TextLabel")
+	speedLabel.Size = UDim2.new(1, -10, 0, 20)
+	speedLabel.Position = UDim2.new(0, 5, 0, 5)
+	speedLabel.BackgroundTransparency = 1
+	speedLabel.Text = "WalkSpeed: 16"
+	speedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	speedLabel.TextSize = 10
+	speedLabel.Font = Enum.Font.Gotham
+	speedLabel.TextXAlignment = Enum.TextXAlignment.Left
+	speedLabel.ZIndex = 4
+	speedLabel.Parent = expandFrame
+
+	-- Slider container
+	local sliderBackground = Instance.new("Frame")
+	sliderBackground.Size = UDim2.new(1, -10, 0, 20)
+	sliderBackground.Position = UDim2.new(0, 5, 0, 30)
+	sliderBackground.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	sliderBackground.BorderSizePixel = 0
+	sliderBackground.ZIndex = 4
+	sliderBackground.Parent = expandFrame
+
+	local sliderCorner = Instance.new("UICorner")
+	sliderCorner.CornerRadius = UDim.new(0, 4)
+	sliderCorner.Parent = sliderBackground
+
+	local sliderFill = Instance.new("Frame")
+	sliderFill.Size = UDim2.new(0, 0, 1, 0)
+	sliderFill.Position = UDim2.new(0, 0, 0, 0)
+	sliderFill.BackgroundColor3 = Color3.fromRGB(100, 255, 100)
+	sliderFill.BorderSizePixel = 0
+	sliderFill.ZIndex = 5
+	sliderFill.Parent = sliderBackground
+
+	local fillCorner = Instance.new("UICorner")
+	fillCorner.CornerRadius = UDim.new(0, 4)
+	fillCorner.Parent = sliderFill
+
+	local sliderButton = Instance.new("TextButton")
+	sliderButton.Size = UDim2.new(1, 0, 1, 0)
+	sliderButton.Position = UDim2.new(0, 0, 0, 0)
+	sliderButton.BackgroundTransparency = 1
+	sliderButton.Text = ""
+	sliderButton.ZIndex = 6
+	sliderButton.Parent = sliderBackground
+
+	-- Quick adjustment buttons
+	local speedControls = Instance.new("Frame")
+	speedControls.Size = UDim2.new(1, -10, 0, 15)
+	speedControls.Position = UDim2.new(0, 5, 0, 55)
+	speedControls.BackgroundTransparency = 1
+	speedControls.ZIndex = 4
+	speedControls.Parent = expandFrame
+
+	local minusButton = Instance.new("TextButton")
+	minusButton.Size = UDim2.new(0, 20, 1, 0)
+	minusButton.Position = UDim2.new(0, 0, 0, 0)
+	minusButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	minusButton.BackgroundTransparency = 0.3
+	minusButton.Text = "-"
+	minusButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	minusButton.TextSize = 12
+	minusButton.Font = Enum.Font.GothamBold
+	minusButton.ZIndex = 4
+	minusButton.Parent = speedControls
+
+	local minusCorner = Instance.new("UICorner")
+	minusCorner.CornerRadius = UDim.new(0, 3)
+	minusCorner.Parent = minusButton
+
+	local plusButton = Instance.new("TextButton")
+	plusButton.Size = UDim2.new(0, 20, 1, 0)
+	plusButton.Position = UDim2.new(1, -20, 0, 0)
+	plusButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	plusButton.BackgroundTransparency = 0.3
+	plusButton.Text = "+"
+	plusButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	plusButton.TextSize = 12
+	plusButton.Font = Enum.Font.GothamBold
+	plusButton.ZIndex = 4
+	plusButton.Parent = speedControls
+
+	local plusCorner = Instance.new("UICorner")
+	plusCorner.CornerRadius = UDim.new(0, 3)
+	plusCorner.Parent = plusButton
+
+	return buttonContainer, button, expandFrame, imageLabel, speedLabel, sliderFill, sliderButton, minusButton, plusButton
+end
+
+-- Function to create JumpPower button with slider
+local function createJumpPowerButton(positionY)
+	local buttonContainer, button, expandFrame, imageLabel = createExpandableButton("🦘 JumpPower: 50", positionY)
+
+	-- Jump label
+	local jumpLabel = Instance.new("TextLabel")
+	jumpLabel.Size = UDim2.new(1, -10, 0, 20)
+	jumpLabel.Position = UDim2.new(0, 5, 0, 5)
+	jumpLabel.BackgroundTransparency = 1
+	jumpLabel.Text = "JumpPower: 50"
+	jumpLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	jumpLabel.TextSize = 10
+	jumpLabel.Font = Enum.Font.Gotham
+	jumpLabel.TextXAlignment = Enum.TextXAlignment.Left
+	jumpLabel.ZIndex = 4
+	jumpLabel.Parent = expandFrame
+
+	-- Slider container
+	local sliderBackground = Instance.new("Frame")
+	sliderBackground.Size = UDim2.new(1, -10, 0, 20)
+	sliderBackground.Position = UDim2.new(0, 5, 0, 30)
+	sliderBackground.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	sliderBackground.BorderSizePixel = 0
+	sliderBackground.ZIndex = 4
+	sliderBackground.Parent = expandFrame
+
+	local sliderCorner = Instance.new("UICorner")
+	sliderCorner.CornerRadius = UDim.new(0, 4)
+	sliderCorner.Parent = sliderBackground
+
+	local sliderFill = Instance.new("Frame")
+	sliderFill.Size = UDim2.new(0, 0, 1, 0)
+	sliderFill.Position = UDim2.new(0, 0, 0, 0)
+	sliderFill.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+	sliderFill.BorderSizePixel = 0
+	sliderFill.ZIndex = 5
+	sliderFill.Parent = sliderBackground
+
+	local fillCorner = Instance.new("UICorner")
+	fillCorner.CornerRadius = UDim.new(0, 4)
+	fillCorner.Parent = sliderFill
+
+	local sliderButton = Instance.new("TextButton")
+	sliderButton.Size = UDim2.new(1, 0, 1, 0)
+	sliderButton.Position = UDim2.new(0, 0, 0, 0)
+	sliderButton.BackgroundTransparency = 1
+	sliderButton.Text = ""
+	sliderButton.ZIndex = 6
+	sliderButton.Parent = sliderBackground
+
+	-- Quick adjustment buttons
+	local jumpControls = Instance.new("Frame")
+	jumpControls.Size = UDim2.new(1, -10, 0, 15)
+	jumpControls.Position = UDim2.new(0, 5, 0, 55)
+	jumpControls.BackgroundTransparency = 1
+	jumpControls.ZIndex = 4
+	jumpControls.Parent = expandFrame
+
+	local minusButton = Instance.new("TextButton")
+	minusButton.Size = UDim2.new(0, 20, 1, 0)
+	minusButton.Position = UDim2.new(0, 0, 0, 0)
+	minusButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	minusButton.BackgroundTransparency = 0.3
+	minusButton.Text = "-"
+	minusButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	minusButton.TextSize = 12
+	minusButton.Font = Enum.Font.GothamBold
+	minusButton.ZIndex = 4
+	minusButton.Parent = jumpControls
+
+	local minusCorner = Instance.new("UICorner")
+	minusCorner.CornerRadius = UDim.new(0, 3)
+	minusCorner.Parent = minusButton
+
+	local plusButton = Instance.new("TextButton")
+	plusButton.Size = UDim2.new(0, 20, 1, 0)
+	plusButton.Position = UDim2.new(1, -20, 0, 0)
+	plusButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	plusButton.BackgroundTransparency = 0.3
+	plusButton.Text = "+"
+	plusButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	plusButton.TextSize = 12
+	plusButton.Font = Enum.Font.GothamBold
+	plusButton.ZIndex = 4
+	plusButton.Parent = jumpControls
+
+	local plusCorner = Instance.new("UICorner")
+	plusCorner.CornerRadius = UDim.new(0, 3)
+	plusCorner.Parent = plusButton
+
+	return buttonContainer, button, expandFrame, imageLabel, jumpLabel, sliderFill, sliderButton, minusButton, plusButton
+end
+
+-- Function to create simple button
+local function createSimpleButton(text, positionY)
+	local buttonContainer = Instance.new("Frame")
+	buttonContainer.Size = UDim2.new(1, 0, 0, 40)
+	buttonContainer.Position = UDim2.new(0, 0, 0, positionY)
+	buttonContainer.BackgroundTransparency = 1
+	buttonContainer.ZIndex = 3
+	buttonContainer.Parent = ContentFrame
+
+	local button = Instance.new("TextButton")
+	button.Size = UDim2.new(1, 0, 1, 0)
+	button.Position = UDim2.new(0, 0, 0, 0)
+	button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	button.BackgroundTransparency = 0.2
+	button.Text = "   " .. text
+	button.TextColor3 = Color3.fromRGB(255, 255, 255)
+	button.TextSize = 13
+	button.Font = Enum.Font.Gotham
+	button.TextXAlignment = Enum.TextXAlignment.Left
+	button.ZIndex = 3
+	button.Parent = buttonContainer
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 8)
+	corner.Parent = button
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(100, 100, 100)
+	stroke.Thickness = 1
+	stroke.Transparency = 0.3
+	stroke.Parent = button
+
+	return buttonContainer, button
+end
+
+-- Create buttons (упрощенная версия без Map Settings)
+local FlyButtonContainer, FlyButton, FlyExpandFrame, FlyImageLabel, FlyToggleButton, FlyStatusLabel, FlySpeedLabel, FlySpeedSliderFill, FlySpeedSliderButton, FlySpeedMinusButton, FlySpeedPlusButton = createFlyButton(0)
+local ESPButtonContainer, ESPButton = createSimpleButton("🎯 ESP: Disabled", 45)
+local NoclipButtonContainer, NoclipButton = createSimpleButton("🚫 Noclip: Disabled", 90)
+local SpeedButtonContainer, SpeedButton, SpeedExpandFrame, SpeedImageLabel, SpeedLabel, SpeedSliderFill, SpeedSliderButton, SpeedMinusButton, SpeedPlusButton = createWalkSpeedButton(135)
+local JumpButtonContainer, JumpButton, JumpExpandFrame, JumpImageLabel, JumpLabel, JumpSliderFill, JumpSliderButton, JumpMinusButton, JumpPlusButton = createJumpPowerButton(180)
+
+-- Variables for systems
+local nowe = false
+local speeds = 1
+local tpwalking = false
+local flyExpanded = false
+local speedExpanded = false
+local jumpExpanded = false
 local noclipEnabled = false
 local noclipConnection = nil
+local espEnabled = false
+local espConnections = {}
+local espNameTags = {}
+local espHighlights = {}
+local espBeams = {}
+
+-- Speed and Jump settings
+local minFlySpeed = 1
+local maxFlySpeed = 15
+local currentFlySpeed = 1
+
+local minWalkSpeed = 16
+local maxWalkSpeed = 350
 local currentWalkSpeed = 16
+
+local minJumpPower = 50
+local maxJumpPower = 285
 local currentJumpPower = 50
 
--- Функция для анимации кнопок
-local function animateButton(button)
-    local originalSize = button.Size
-    button.Size = originalSize - UDim2.new(0, 3, 0, 3)
-    wait(0.1)
-    button.Size = originalSize
+-- Function to move buttons when opening/closing menus
+local function updateButtonPositions()
+	local currentY = 0
+
+	-- Fly button
+	FlyButtonContainer.Position = UDim2.new(0, 0, 0, currentY)
+	currentY = currentY + 40
+
+	-- If Fly expanded, add its height
+	if flyExpanded then
+		currentY = currentY + 110 + 5
+	else
+		currentY = currentY + 5
+	end
+
+	-- ESP button
+	ESPButtonContainer.Position = UDim2.new(0, 0, 0, currentY)
+	currentY = currentY + 40 + 5
+
+	-- Noclip button
+	NoclipButtonContainer.Position = UDim2.new(0, 0, 0, currentY)
+	currentY = currentY + 40 + 5
+
+	-- Speed button
+	SpeedButtonContainer.Position = UDim2.new(0, 0, 0, currentY)
+	currentY = currentY + 40
+
+	-- If Speed expanded, add its height
+	if speedExpanded then
+		currentY = currentY + 80 + 5
+	else
+		currentY = currentY + 5
+	end
+
+	-- Jump button
+	JumpButtonContainer.Position = UDim2.new(0, 0, 0, currentY)
+	currentY = currentY + 40
+
+	-- If Jump expanded, add its height
+	if jumpExpanded then
+		currentY = currentY + 80 + 5
+	else
+		currentY = currentY + 5
+	end
+
+	-- Update content size
+	updateContentSize()
 end
 
--- Функция обновления статусов
-local function updateButtonStatus()
-    if flyEnabled then
-        FlyButton.Text = "   🛸 Fly System: ✅ Enabled"
-        FlyButton.TextColor3 = Color3.fromRGB(100, 255, 100)
-    else
-        FlyButton.Text = "   🛸 Fly System: ❌ Disabled"
-        FlyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    end
+-- Function for fixed button animation
+local function safeAnimateButton(button)
+	if button:GetAttribute("Animating") then return end
+	button:SetAttribute("Animating", true)
 
-    if espEnabled then
-        ESPButton.Text = "   🎯 ESP: ✅ Enabled"
-        ESPButton.TextColor3 = Color3.fromRGB(100, 255, 100)
-    else
-        ESPButton.Text = "   🎯 ESP: ❌ Disabled"
-        ESPButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    end
+	local originalSize = button.Size
+	local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
-    if noclipEnabled then
-        NoclipButton.Text = "   🚫 Noclip: ✅ Enabled"
-        NoclipButton.TextColor3 = Color3.fromRGB(100, 255, 100)
-    else
-        NoclipButton.Text = "   🚫 Noclip: ❌ Disabled"
-        NoclipButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    end
+	local shrinkTween = TweenService:Create(button, tweenInfo, {Size = originalSize - UDim2.new(0, 3, 0, 3)})
+	local growTween = TweenService:Create(button, tweenInfo, {Size = originalSize})
 
-    SpeedButton.Text = "   🏃‍♂️ WalkSpeed: " .. currentWalkSpeed
-    JumpButton.Text = "   🦘 JumpPower: " .. currentJumpPower
+	shrinkTween:Play()
+	shrinkTween.Completed:Connect(function()
+		growTween:Play()
+		growTween.Completed:Connect(function()
+			button:SetAttribute("Animating", false)
+		end)
+	end)
 end
 
--- Функция переключения полета
+-- Hover animation for dark gray buttons
+local function setupDarkGrayHoverEffects(button)
+	local originalTransparency = button.BackgroundTransparency
+
+	button.MouseEnter:Connect(function()
+		if button:GetAttribute("Animating") then return end
+		local tween = TweenService:Create(button, TweenInfo.new(0.2), {
+			BackgroundColor3 = Color3.fromRGB(80, 80, 80),
+			BackgroundTransparency = originalTransparency - 0.1
+		})
+		tween:Play()
+	end)
+
+	button.MouseLeave:Connect(function()
+		if button:GetAttribute("Animating") then return end
+		local tween = TweenService:Create(button, TweenInfo.new(0.2), {
+			BackgroundColor3 = Color3.fromRGB(60, 60, 60),
+			BackgroundTransparency = originalTransparency
+		})
+		tween:Play()
+	end)
+end
+
+-- Function for icon animation (rotation)
+local function animateIcon(imageLabel, expand)
+	local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+	if expand then
+		local tween = TweenService:Create(imageLabel, tweenInfo, {
+			Rotation = 180
+		})
+		tween:Play()
+	else
+		local tween = TweenService:Create(imageLabel, tweenInfo, {
+			Rotation = 0
+		})
+		tween:Play()
+	end
+end
+
+-- Function to update Fly status
+local function updateFlyStatus()
+	if nowe then
+		FlyStatusLabel.Text = "Status: ✅ Enabled"
+		FlyStatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+		FlyToggleButton.Text = "Disable Fly"
+	else
+		FlyStatusLabel.Text = "Status: ❌ Disabled"
+		FlyStatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+		FlyToggleButton.Text = "Enable Fly"
+	end
+end
+
+-- Function to update ESP status
+local function updateESPStatus()
+	if espEnabled then
+		ESPButton.Text = "   🎯 ESP: ✅ Enabled"
+		ESPButton.TextColor3 = Color3.fromRGB(100, 255, 100)
+	else
+		ESPButton.Text = "   🎯 ESP: ❌ Disabled"
+		ESPButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+	end
+end
+
+-- Function to update Noclip status
+local function updateNoclipStatus()
+	if noclipEnabled then
+		NoclipButton.Text = "   🚫 Noclip: ✅ Enabled"
+		NoclipButton.TextColor3 = Color3.fromRGB(100, 255, 100)
+	else
+		NoclipButton.Text = "   🚫 Noclip: ❌ Disabled"
+		NoclipButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+	end
+end
+
+-- Function to update Fly speed
+local function updateFlySpeed(newSpeed)
+	currentFlySpeed = math.clamp(newSpeed, minFlySpeed, maxFlySpeed)
+	speeds = currentFlySpeed
+
+	-- Update text
+	FlySpeedLabel.Text = "Fly Speed: " .. currentFlySpeed
+
+	-- Update slider position (0% to 100%)
+	local fillPercentage = (currentFlySpeed - minFlySpeed) / (maxFlySpeed - minFlySpeed)
+
+	-- Animate slider update
+	local tween = TweenService:Create(FlySpeedSliderFill, TweenInfo.new(0.2), {
+		Size = UDim2.new(fillPercentage, 0, 1, 0)
+	})
+	tween:Play()
+
+	-- If flight is active, restart teleportation system with new speed
+	if nowe then
+		tpwalking = false
+		for i = 1, speeds do
+			spawn(function()
+				local hb = game:GetService("RunService").Heartbeat	
+				tpwalking = true
+				local chr = game.Players.LocalPlayer.Character
+				local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+				while tpwalking and hb:Wait() and chr and hum and hum.Parent do
+					if hum.MoveDirection.Magnitude > 0 then
+						chr:TranslateBy(hum.MoveDirection)
+					end
+				end
+			end)
+		end
+	end
+end
+
+-- Function to update WalkSpeed
+local function updateWalkSpeed(newSpeed)
+	currentWalkSpeed = math.clamp(newSpeed, minWalkSpeed, maxWalkSpeed)
+	
+	-- Update text
+	SpeedLabel.Text = "WalkSpeed: " .. currentWalkSpeed
+	SpeedButton.Text = "   🏃‍♂️ WalkSpeed: " .. currentWalkSpeed
+
+	-- Update slider position (0% to 100%)
+	local fillPercentage = (currentWalkSpeed - minWalkSpeed) / (maxWalkSpeed - minWalkSpeed)
+
+	-- Animate slider update
+	local tween = TweenService:Create(SpeedSliderFill, TweenInfo.new(0.2), {
+		Size = UDim2.new(fillPercentage, 0, 1, 0)
+	})
+	tween:Play()
+
+	-- Apply to character
+	local character = player.Character
+	if character then
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.WalkSpeed = currentWalkSpeed
+		end
+	end
+end
+
+-- Function to update JumpPower
+local function updateJumpPower(newJump)
+	currentJumpPower = math.clamp(newJump, minJumpPower, maxJumpPower)
+	
+	-- Update text
+	JumpLabel.Text = "JumpPower: " .. currentJumpPower
+	JumpButton.Text = "   🦘 JumpPower: " .. currentJumpPower
+
+	-- Update slider position (0% to 100%)
+	local fillPercentage = (currentJumpPower - minJumpPower) / (maxJumpPower - minJumpPower)
+
+	-- Animate slider update
+	local tween = TweenService:Create(JumpSliderFill, TweenInfo.new(0.2), {
+		Size = UDim2.new(fillPercentage, 0, 1, 0)
+	})
+	tween:Play()
+
+	-- Apply to character
+	local character = player.Character
+	if character then
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.JumpPower = currentJumpPower
+		end
+	end
+end
+
+-- Function for Fly expand/collapse animation
+local function toggleFlyExpand()
+	safeAnimateButton(FlyButton)
+
+	if flyExpanded then
+		-- Collapse
+		animateIcon(FlyImageLabel, false)
+
+		local tween = TweenService:Create(FlyExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(1, 0, 0, 0)
+		})
+		tween:Play()
+
+		tween.Completed:Connect(function()
+			FlyExpandFrame.Visible = false
+			flyExpanded = false
+			updateButtonPositions()
+		end)
+	else
+		-- Expand
+		FlyExpandFrame.Visible = true
+		animateIcon(FlyImageLabel, true)
+
+		local tween = TweenService:Create(FlyExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(1, 0, 0, 110)
+		})
+		tween:Play()
+
+		tween.Completed:Connect(function()
+			flyExpanded = true
+			updateButtonPositions()
+		end)
+	end
+end
+
+-- Function for WalkSpeed expand/collapse animation
+local function toggleSpeedExpand()
+	safeAnimateButton(SpeedButton)
+
+	if speedExpanded then
+		-- Collapse
+		animateIcon(SpeedImageLabel, false)
+
+		local tween = TweenService:Create(SpeedExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(1, 0, 0, 0)
+		})
+		tween:Play()
+
+		tween.Completed:Connect(function()
+			SpeedExpandFrame.Visible = false
+			speedExpanded = false
+			updateButtonPositions()
+		end)
+	else
+		-- Expand
+		SpeedExpandFrame.Visible = true
+		animateIcon(SpeedImageLabel, true)
+
+		local tween = TweenService:Create(SpeedExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(1, 0, 0, 80)
+		})
+		tween:Play()
+
+		tween.Completed:Connect(function()
+			speedExpanded = true
+			updateButtonPositions()
+		end)
+	end
+end
+
+-- Function for JumpPower expand/collapse animation
+local function toggleJumpExpand()
+	safeAnimateButton(JumpButton)
+
+	if jumpExpanded then
+		-- Collapse
+		animateIcon(JumpImageLabel, false)
+
+		local tween = TweenService:Create(JumpExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(1, 0, 0, 0)
+		})
+		tween:Play()
+
+		tween.Completed:Connect(function()
+			JumpExpandFrame.Visible = false
+			jumpExpanded = false
+			updateButtonPositions()
+		end)
+	else
+		-- Expand
+		JumpExpandFrame.Visible = true
+		animateIcon(JumpImageLabel, true)
+
+		local tween = TweenService:Create(JumpExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(1, 0, 0, 80)
+		})
+		tween:Play()
+
+		tween.Completed:Connect(function()
+			jumpExpanded = true
+			updateButtonPositions()
+		end)
+	end
+end
+
+-- MINIMIZE/MAXIMIZE FUNCTIONS
+local function minimizeWindow()
+	safeAnimateButton(MinimizeButton)
+	
+	-- Store current position for floating button
+	local currentPosition = MainFrame.Position
+	
+	local tween = TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = UDim2.new(0, 0, 0, 0),
+		Position = UDim2.new(0.5, 0, 0.5, 0),
+		BackgroundTransparency = 1
+	})
+	tween:Play()
+	
+	tween.Completed:Connect(function()
+		MainFrame.Visible = false
+		-- Show floating button at current window position
+		FloatingButton.Position = currentPosition
+		FloatingButton.Visible = true
+	end)
+end
+
+local function maximizeWindow()
+	safeAnimateButton(FloatingButton)
+	
+	-- Hide floating button first
+	FloatingButton.Visible = false
+	
+	-- Show and animate main window
+	MainFrame.Visible = true
+	MainFrame.Size = UDim2.new(0, 0, 0, 0)
+	MainFrame.Position = FloatingButton.Position
+	MainFrame.BackgroundTransparency = 1
+	
+	local tween = TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Size = UDim2.new(0, 350, 0, 500),
+		Position = UDim2.new(0.5, -175, 0.5, -250),
+		BackgroundTransparency = 0.3
+	})
+	tween:Play()
+end
+
+-- WINDOW DRAGGING FUNCTION
+local function setupWindowDrag()
+	local dragging = false
+	local dragInput, dragStart, startPos
+
+	local function update(input)
+		local delta = input.Position - dragStart
+		MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+
+	TitleBar.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = MainFrame.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+
+	TitleBar.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			update(input)
+		end
+	end)
+end
+
+-- FLOATING BUTTON DRAGGING FUNCTION
+local function setupFloatingButtonDrag()
+	local dragging = false
+	local dragInput, dragStart, startPos
+	local clickTime = 0
+
+	local function update(input)
+		local delta = input.Position - dragStart
+		FloatingButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+
+	FloatingButton.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = FloatingButton.Position
+			clickTime = tick()
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+					
+					-- Если был короткий клик (менее 0.3 секунды) - открываем окно
+					if tick() - clickTime < 0.3 then
+						maximizeWindow()
+					end
+				end
+			end)
+		end
+	end)
+
+	FloatingButton.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			update(input)
+		end
+	end)
+end
+
+-- WORKING FLY SYSTEM
 local function toggleFly()
-    animateButton(FlyButton)
-    flyEnabled = not flyEnabled
-    updateButtonStatus()
-    
-    -- Простая реализация полета
-    if flyEnabled then
-        -- Включить полет
-    else
-        -- Выключить полет
-    end
+	local speaker = game:GetService("Players").LocalPlayer
+
+	if nowe == false then
+		nowe = true
+		updateFlyStatus()
+
+		for i = 1, speeds do
+			spawn(function()
+				local hb = game:GetService("RunService").Heartbeat	
+				tpwalking = true
+				local chr = game.Players.LocalPlayer.Character
+				local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+				while tpwalking and hb:Wait() and chr and hum and hum.Parent do
+					if hum.MoveDirection.Magnitude > 0 then
+						chr:TranslateBy(hum.MoveDirection)
+					end
+				end
+			end)
+		end
+
+		game.Players.LocalPlayer.Character.Animate.Disabled = true
+		local Char = game.Players.LocalPlayer.Character
+		local Hum = Char:FindFirstChildOfClass("Humanoid") or Char:FindFirstChildOfClass("AnimationController")
+
+		for i,v in next, Hum:GetPlayingAnimationTracks() do
+			v:AdjustSpeed(0)
+		end
+
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Landed,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Running,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming,false)
+		speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
+
+		if game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").RigType == Enum.HumanoidRigType.R6 then
+			local plr = game.Players.LocalPlayer
+			local torso = plr.Character.Torso
+			local flying = true
+			local deb = true
+			local ctrl = {f = 0, b = 0, l = 0, r = 0}
+			local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+			local maxspeed = 50
+			local speed = 0
+
+			local bg = Instance.new("BodyGyro", torso)
+			bg.P = 9e4
+			bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+			bg.cframe = torso.CFrame
+			local bv = Instance.new("BodyVelocity", torso)
+			bv.velocity = Vector3.new(0,0.1,0)
+			bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+
+			plr.Character.Humanoid.PlatformStand = true
+
+			while nowe == true or game:GetService("Players").LocalPlayer.Character.Humanoid.Health == 0 do
+				game:GetService("RunService").RenderStepped:Wait()
+
+				if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
+					speed = speed+.5+(speed/maxspeed)
+					if speed > maxspeed then
+						speed = maxspeed
+					end
+				elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
+					speed = speed-1
+					if speed < 0 then
+						speed = 0
+					end
+				end
+
+				if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
+					bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+					lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+				elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
+					bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+				else
+					bv.velocity = Vector3.new(0,0,0)
+				end
+
+				bg.cframe = game.Workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
+			end
+
+			ctrl = {f = 0, b = 0, l = 0, r = 0}
+			lastctrl = {f = 0, b = 0, l = 0, r = 0}
+			speed = 0
+			bg:Destroy()
+			bv:Destroy()
+			plr.Character.Humanoid.PlatformStand = false
+			game.Players.LocalPlayer.Character.Animate.Disabled = false
+			tpwalking = false
+
+		else
+			local plr = game.Players.LocalPlayer
+			local UpperTorso = plr.Character.UpperTorso
+			local flying = true
+			local deb = true
+			local ctrl = {f = 0, b = 0, l = 0, r = 0}
+			local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+			local maxspeed = 50
+			local speed = 0
+
+			local bg = Instance.new("BodyGyro", UpperTorso)
+			bg.P = 9e4
+			bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+			bg.cframe = UpperTorso.CFrame
+			local bv = Instance.new("BodyVelocity", UpperTorso)
+			bv.velocity = Vector3.new(0,0.1,0)
+			bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+
+			plr.Character.Humanoid.PlatformStand = true
+
+			while nowe == true or game:GetService("Players").LocalPlayer.Character.Humanoid.Health == 0 do
+				wait()
+
+				if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
+					speed = speed+.5+(speed/maxspeed)
+					if speed > maxspeed then
+						speed = maxspeed
+					end
+				elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
+					speed = speed-1
+					if speed < 0 then
+						speed = 0
+					end
+				end
+
+				if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
+					bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+					lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+				elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
+					bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+				else
+					bv.velocity = Vector3.new(0,0,0)
+				end
+
+				bg.cframe = game.Workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
+			end
+
+			ctrl = {f = 0, b = 0, l = 0, r = 0}
+			lastctrl = {f = 0, b = 0, l = 0, r = 0}
+			speed = 0
+			bg:Destroy()
+			bv:Destroy()
+			plr.Character.Humanoid.PlatformStand = false
+			game.Players.LocalPlayer.Character.Animate.Disabled = false
+			tpwalking = false
+		end
+
+	else 
+		nowe = false
+		updateFlyStatus()
+
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Landed,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Running,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming,true)
+		speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
+	end
 end
 
--- Функция переключения ESP
-local function toggleESP()
-    animateButton(ESPButton)
-    espEnabled = not espEnabled
-    updateButtonStatus()
+-- Controls for flight (WASD)
+local ctrl = {f = 0, b = 0, l = 0, r = 0}
+local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+
+local function handleInput(input, processed)
+	if processed then return end
+	if input.KeyCode == Enum.KeyCode.W then
+		ctrl.f = 1
+	elseif input.KeyCode == Enum.KeyCode.S then
+		ctrl.b = -1
+	elseif input.KeyCode == Enum.KeyCode.A then
+		ctrl.l = -1
+	elseif input.KeyCode == Enum.KeyCode.D then
+		ctrl.r = 1
+	end
 end
 
--- Функция переключения Noclip
+local function handleInputEnd(input, processed)
+	if processed then return end
+	if input.KeyCode == Enum.KeyCode.W then
+		ctrl.f = 0
+	elseif input.KeyCode == Enum.KeyCode.S then
+		ctrl.b = 0
+	elseif input.KeyCode == Enum.KeyCode.A then
+		ctrl.l = 0
+	elseif input.KeyCode == Enum.KeyCode.D then
+		ctrl.r = 0
+	end
+end
+
+UserInputService.InputBegan:Connect(handleInput)
+UserInputService.InputEnded:Connect(handleInputEnd)
+
+-- NOCLIP SYSTEM
 local function toggleNoclip()
-    animateButton(NoclipButton)
-    noclipEnabled = not noclipEnabled
-    updateButtonStatus()
+	safeAnimateButton(NoclipButton)
 
-    if noclipEnabled then
-        noclipConnection = game:GetService("RunService").Stepped:Connect(function()
-            if not noclipEnabled then
-                noclipConnection:Disconnect()
-                return
-            end
-            
-            local character = player.Character
-            if character then
-                for _, part in pairs(character:GetChildren()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
-                end
-            end
-        end)
-    else
-        if noclipConnection then
-            noclipConnection:Disconnect()
-            noclipConnection = nil
-        end
-        
-        -- Восстанавливаем коллизии
-        local character = player.Character
-        if character then
-            for _, part in pairs(character:GetChildren()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true
-                end
-            end
-        end
-    end
+	if not noclipEnabled then
+		-- Enable Noclip
+		noclipEnabled = true
+		updateNoclipStatus()
+
+		noclipConnection = RunService.Stepped:Connect(function()
+			if not noclipEnabled then
+				noclipConnection:Disconnect()
+				return
+			end
+
+			local character = player.Character
+			if character then
+				for _, child in pairs(character:GetChildren()) do
+					if child:IsA("BasePart") then
+						child.CanCollide = false
+					end
+				end
+			end
+		end)
+	else
+		-- Disable Noclip
+		noclipEnabled = false
+		updateNoclipStatus()
+
+		if noclipConnection then
+			noclipConnection:Disconnect()
+			noclipConnection = nil
+		end
+
+		-- Restore collisions
+		local character = player.Character
+		if character then
+			for _, child in pairs(character:GetChildren()) do
+				if child:IsA("BasePart") then
+					child.CanCollide = true
+				end
+			end
+		end
+	end
 end
 
--- Функция изменения скорости
-local function changeSpeed()
-    animateButton(SpeedButton)
-    currentWalkSpeed = currentWalkSpeed + 10
-    if currentWalkSpeed > 100 then
-        currentWalkSpeed = 16
-    end
-    
-    local character = player.Character
-    if character then
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.WalkSpeed = currentWalkSpeed
-        end
-    end
-    
-    updateButtonStatus()
+-- ESP SYSTEM
+local function getRainbowColor(timeOffset)
+	local hue = (tick() + timeOffset) % 5 / 5
+	return Color3.fromHSV(hue, 1, 1)
 end
 
--- Функция изменения прыжка
-local function changeJump()
-    animateButton(JumpButton)
-    currentJumpPower = currentJumpPower + 10
-    if currentJumpPower > 100 then
-        currentJumpPower = 50
-    end
-    
-    local character = player.Character
-    if character then
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.JumpPower = currentJumpPower
-        end
-    end
-    
-    updateButtonStatus()
+local function createNameTag(player)
+	local character = player.Character
+	if not character then return end
+
+	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+	if not humanoidRootPart then return end
+
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name = "ESP_NameTag_" .. player.Name
+	billboard.Adornee = humanoidRootPart
+	billboard.Size = UDim2.new(0, 200, 0, 50)
+	billboard.StudsOffset = Vector3.new(0, 3.5, 0)
+	billboard.AlwaysOnTop = true
+	billboard.MaxDistance = 1000
+	billboard.Enabled = true
+	billboard.Parent = humanoidRootPart
+
+	local background = Instance.new("Frame")
+	background.Size = UDim2.new(1, 0, 1, 0)
+	background.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	background.BackgroundTransparency = 0.3
+	background.BorderSizePixel = 0
+	background.Parent = billboard
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 8)
+	corner.Parent = background
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(255, 255, 255)
+	stroke.Thickness = 1
+	stroke.Transparency = 0.2
+	stroke.Parent = background
+
+	local textLabel = Instance.new("TextLabel")
+	textLabel.Size = UDim2.new(1, -10, 1, -10)
+	textLabel.Position = UDim2.new(0, 5, 0, 5)
+	textLabel.BackgroundTransparency = 1
+	textLabel.Text = player.Name
+	textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	textLabel.TextSize = 14
+	textLabel.Font = Enum.Font.GothamBold
+	textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+	textLabel.TextStrokeTransparency = 0
+	textLabel.TextXAlignment = Enum.TextXAlignment.Center
+	textLabel.TextYAlignment = Enum.TextYAlignment.Center
+	textLabel.Parent = billboard
+
+	espNameTags[player] = billboard
 end
 
--- Назначаем обработчики
-FlyButton.MouseButton1Click:Connect(toggleFly)
-ESPButton.MouseButton1Click:Connect(toggleESP)
-NoclipButton.MouseButton1Click:Connect(toggleNoclip)
-SpeedButton.MouseButton1Click:Connect(changeSpeed)
-JumpButton.MouseButton1Click:Connect(changeJump)
+local function createRainbowHighlight(player)
+	local character = player.Character
+	if not character then return end
 
-CloseButton.MouseButton1Click:Connect(function()
-    animateButton(CloseButton)
-    ScreenGui:Destroy()
+	local highlight = Instance.new("Highlight")
+	highlight.Name = "ESP_RainbowHighlight_" .. player.Name
+	highlight.Adornee = character
+	highlight.FillTransparency = 1
+	highlight.OutlineTransparency = 0
+	highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	highlight.Parent = character
+
+	espHighlights[player] = highlight
+
+	spawn(function()
+		while espEnabled and highlight and highlight.Parent do
+			highlight.OutlineColor = getRainbowColor(player.UserId * 0.1)
+			wait(0.1)
+		end
+	end)
+end
+
+local function createRainbowBeamToPlayer(otherPlayer)
+	local character = otherPlayer.Character
+	if not character then return end
+
+	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+	if not humanoidRootPart then return end
+
+	local localCharacter = player.Character
+	if not localCharacter then return end
+	local localHumanoidRootPart = localCharacter:FindFirstChild("HumanoidRootPart")
+	if not localHumanoidRootPart then return end
+
+	local beam = Instance.new("Beam")
+	beam.Name = "ESP_RainbowBeamToPlayer_" .. otherPlayer.Name
+	beam.FaceCamera = true
+	beam.Width0 = 0.2
+	beam.Width1 = 0.2
+	beam.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, getRainbowColor(otherPlayer.UserId * 0.05)),
+		ColorSequenceKeypoint.new(0.5, getRainbowColor(otherPlayer.UserId * 0.05 + 0.25)),
+		ColorSequenceKeypoint.new(1, getRainbowColor(otherPlayer.UserId * 0.05 + 0.5))
+	})
+	
+	local attachment0 = Instance.new("Attachment")
+	attachment0.Name = "BeamAttachment0"
+	attachment0.Parent = localHumanoidRootPart
+	
+	local attachment1 = Instance.new("Attachment")
+	attachment1.Name = "BeamAttachment1"
+	attachment1.Parent = humanoidRootPart
+	
+	beam.Attachment0 = attachment0
+	beam.Attachment1 = attachment1
+	beam.Parent = Workspace
+
+	espBeams[otherPlayer] = beam
+
+	spawn(function()
+		while espEnabled and beam and beam.Parent do
+			beam.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, getRainbowColor(otherPlayer.UserId * 0.05)),
+				ColorSequenceKeypoint.new(0.5, getRainbowColor(otherPlayer.UserId * 0.05 + 0.25)),
+				ColorSequenceKeypoint.new(1, getRainbowColor(otherPlayer.UserId * 0.05 + 0.5))
+			})
+			wait(0.1)
+		end
+	end)
+
+	return beam
+end
+
+local function removeESP(player)
+	if espNameTags[player] then
+		espNameTags[player]:Destroy()
+		espNameTags[player] = nil
+	end
+	if espHighlights[player] then
+		espHighlights[player]:Destroy()
+		espHighlights[player] = nil
+	end
+	if espBeams[player] then
+		espBeams[player]:Destroy()
+		espBeams[player] = nil
+	end
+end
+
+local function toggleESP()
+	safeAnimateButton(ESPButton)
+
+	if not espEnabled then
+		-- Enable ESP
+		espEnabled = true
+		updateESPStatus()
+
+		-- Create ESP for existing players
+		for _, otherPlayer in pairs(Players:GetPlayers()) do
+			if otherPlayer ~= player then
+				createNameTag(otherPlayer)
+				createRainbowHighlight(otherPlayer)
+				createRainbowBeamToPlayer(otherPlayer)
+			end
+		end
+
+		-- Handler for new players
+		espConnections.playerAdded = Players.PlayerAdded:Connect(function(otherPlayer)
+			if espEnabled then
+				otherPlayer.CharacterAdded:Connect(function(character)
+					if espEnabled then
+						wait(1)
+						createNameTag(otherPlayer)
+						createRainbowHighlight(otherPlayer)
+						createRainbowBeamToPlayer(otherPlayer)
+					end
+				end)
+				if otherPlayer.Character then
+					createNameTag(otherPlayer)
+					createRainbowHighlight(otherPlayer)
+					createRainbowBeamToPlayer(otherPlayer)
+				end
+			end
+		end)
+
+		-- Handler for player removal
+		espConnections.playerRemoving = Players.PlayerRemoving:Connect(function(otherPlayer)
+			removeESP(otherPlayer)
+		end)
+
+		-- Handler for player respawn
+		espConnections.characterAdded = player.CharacterAdded:Connect(function(character)
+			wait(2)
+			if espEnabled then
+				for _, otherPlayer in pairs(Players:GetPlayers()) do
+					if otherPlayer ~= player and otherPlayer.Character then
+						removeESP(otherPlayer)
+						createNameTag(otherPlayer)
+						createRainbowHighlight(otherPlayer)
+						createRainbowBeamToPlayer(otherPlayer)
+					end
+				end
+			end
+		end)
+
+	else
+		-- Disable ESP
+		espEnabled = false
+		updateESPStatus()
+
+		-- Remove all ESP elements
+		for otherPlayer in pairs(espNameTags) do
+			removeESP(otherPlayer)
+		end
+		espNameTags = {}
+		espHighlights = {}
+		espBeams = {}
+
+		-- Disconnect connections
+		for _, connection in pairs(espConnections) do
+			connection:Disconnect()
+		end
+		espConnections = {}
+	end
+end
+
+-- SPEED SLIDER FUNCTIONS
+local function setupFlySpeedSlider()
+	local dragging = false
+
+	FlySpeedSliderButton.MouseButton1Down:Connect(function()
+		dragging = true
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local sliderAbsolutePosition = FlySpeedSliderButton.AbsolutePosition.X
+			local sliderAbsoluteSize = FlySpeedSliderButton.AbsoluteSize.X
+			local mouseX = input.Position.X
+			
+			local relativeX = math.clamp(mouseX - sliderAbsolutePosition, 0, sliderAbsoluteSize)
+			local percentage = relativeX / sliderAbsoluteSize
+			
+			local newSpeed = math.floor(minFlySpeed + (maxFlySpeed - minFlySpeed) * percentage)
+			updateFlySpeed(newSpeed)
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = false
+		end
+	end)
+
+	-- Plus/Minus button functionality
+	FlySpeedPlusButton.MouseButton1Click:Connect(function()
+		safeAnimateButton(FlySpeedPlusButton)
+		updateFlySpeed(currentFlySpeed + 1)
+	end)
+
+	FlySpeedMinusButton.MouseButton1Click:Connect(function()
+		safeAnimateButton(FlySpeedMinusButton)
+		updateFlySpeed(currentFlySpeed - 1)
+	end)
+end
+
+local function setupWalkSpeedSlider()
+	local dragging = false
+
+	SpeedSliderButton.MouseButton1Down:Connect(function()
+		dragging = true
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local sliderAbsolutePosition = SpeedSliderButton.AbsolutePosition.X
+			local sliderAbsoluteSize = SpeedSliderButton.AbsoluteSize.X
+			local mouseX = input.Position.X
+			
+			local relativeX = math.clamp(mouseX - sliderAbsolutePosition, 0, sliderAbsoluteSize)
+			local percentage = relativeX / sliderAbsoluteSize
+			
+			local newSpeed = math.floor(minWalkSpeed + (maxWalkSpeed - minWalkSpeed) * percentage)
+			updateWalkSpeed(newSpeed)
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = false
+		end
+	end)
+
+	-- Plus/Minus button functionality
+	SpeedPlusButton.MouseButton1Click:Connect(function()
+		safeAnimateButton(SpeedPlusButton)
+		updateWalkSpeed(currentWalkSpeed + 1)
+	end)
+
+	SpeedMinusButton.MouseButton1Click:Connect(function()
+		safeAnimateButton(SpeedMinusButton)
+		updateWalkSpeed(currentWalkSpeed - 1)
+	end)
+end
+
+local function setupJumpPowerSlider()
+	local dragging = false
+
+	JumpSliderButton.MouseButton1Down:Connect(function()
+		dragging = true
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local sliderAbsolutePosition = JumpSliderButton.AbsolutePosition.X
+			local sliderAbsoluteSize = JumpSliderButton.AbsoluteSize.X
+			local mouseX = input.Position.X
+			
+			local relativeX = math.clamp(mouseX - sliderAbsolutePosition, 0, sliderAbsoluteSize)
+			local percentage = relativeX / sliderAbsoluteSize
+			
+			local newJump = math.floor(minJumpPower + (maxJumpPower - minJumpPower) * percentage)
+			updateJumpPower(newJump)
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = false
+		end
+	end)
+
+	-- Plus/Minus button functionality
+	JumpPlusButton.MouseButton1Click:Connect(function()
+		safeAnimateButton(JumpPlusButton)
+		updateJumpPower(currentJumpPower + 1)
+	end)
+
+	JumpMinusButton.MouseButton1Click:Connect(function()
+		safeAnimateButton(JumpMinusButton)
+		updateJumpPower(currentJumpPower - 1)
+	end)
+end
+
+-- BUTTON HANDLER FUNCTION
+local function setupButton(button, callback)
+	button.MouseButton1Click:Connect(function()
+		callback()
+	end)
+end
+
+-- Set up all buttons
+setupButton(FlyButton, toggleFlyExpand)
+setupButton(FlyToggleButton, toggleFly)
+setupButton(ESPButton, toggleESP)
+setupButton(NoclipButton, toggleNoclip)
+setupButton(SpeedButton, toggleSpeedExpand)
+setupButton(JumpButton, toggleJumpExpand)
+setupButton(MinimizeButton, minimizeWindow)
+
+setupButton(CloseButton, function()
+	safeAnimateButton(CloseButton)
+
+	local tween = TweenService:Create(MainFrame, TweenInfo.new(0.3), {
+		Size = UDim2.new(0, 0, 0, 0),
+		Position = UDim2.new(0.5, 0, 0.5, 0),
+		BackgroundTransparency = 1
+	})
+	tween:Play()
+
+	tween.Completed:Wait()
+	ScreenGui:Destroy()
 end)
 
--- Перетаскивание окна
-local dragging = false
-local dragStart, startPos
+-- Apply hover effects to all buttons
+local allButtons = {
+	FlyButton, CloseButton, MinimizeButton, FlyToggleButton, ESPButton, NoclipButton, 
+	SpeedButton, JumpButton, FloatingButton, FlySpeedMinusButton, FlySpeedPlusButton,
+	SpeedMinusButton, SpeedPlusButton, JumpMinusButton, JumpPlusButton
+}
 
-TitleBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-    end
-end)
+for _, button in pairs(allButtons) do
+	if button then
+		setupDarkGrayHoverEffects(button)
+	end
+end
 
-TitleBar.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
+-- Set up window dragging and sliders
+setupWindowDrag()
+setupFloatingButtonDrag()
+setupFlySpeedSlider()
+setupWalkSpeedSlider()
+setupJumpPowerSlider()
 
-TitleBar.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
+-- Initialize speeds and statuses
+updateFlySpeed(1)
+updateWalkSpeed(16)
+updateJumpPower(50)
+updateNoclipStatus()
 
--- Инициализация
-updateButtonStatus()
+-- Update content size after creating all elements
+updateContentSize()
 
--- Уведомление
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Denker Cheat " .. Version,
-    Text = "GUI loaded successfully!",
-    Duration = 3,
+-- Opening animation
+MainFrame.Size = UDim2.new(0, 0, 0, 0)
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+MainFrame.BackgroundTransparency = 1
+
+local openTween = TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+	Size = UDim2.new(0, 350, 0, 500),
+	Position = UDim2.new(0.5, -175, 0.5, -250),
+	BackgroundTransparency = 0.3
 })
+openTween:Play()
 
-print("✅ Denker Cheat " .. Version .. " GUI loaded!")
+-- Safe notification
+pcall(function()
+	game:GetService("StarterGui"):SetCore("SendNotification", { 
+		Title = "Denker Cheat "..Version;
+		Text = "Denker Cheat loaded!";
+		Icon = "rbxthumb://type=Asset&id=85901190532963&w=150&h=150";
+		Duration = 5;
+	})
+end)
+
+print("🎮 Denker Cheat " .. Version .. " loaded!")
