@@ -107,7 +107,7 @@ TitleCorner.CornerRadius = UDim.new(0, 12)
 TitleCorner.Parent = TitleBar
 
 local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size = UDim2.new(1, -80, 1, 0) -- Made smaller for minimize button
+TitleLabel.Size = UDim2.new(1, -80, 1, 0)
 TitleLabel.Position = UDim2.new(0, 10, 0, 0)
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Text = "Denker Cheat " .. Version
@@ -1101,9 +1101,607 @@ local function setupFloatingButtonDrag()
 	end)
 end
 
--- [ОСТАЛЬНОЙ КОД ОСТАЕТСЯ ТАКИМ ЖЕ КАК В ПРЕДЫДУЩЕМ ОТВЕТЕ...]
--- Здесь должен быть весь остальной код систем (полет, ESP, Noclip и т.д.)
--- Для экономии места я пропущу эту часть, так как она идентична предыдущему коду
+-- WORKING FLY SYSTEM
+local function toggleFly()
+	local speaker = game:GetService("Players").LocalPlayer
+
+	if nowe == false then
+		nowe = true
+		updateFlyStatus()
+
+		for i = 1, speeds do
+			spawn(function()
+				local hb = game:GetService("RunService").Heartbeat	
+				tpwalking = true
+				local chr = game.Players.LocalPlayer.Character
+				local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+				while tpwalking and hb:Wait() and chr and hum and hum.Parent do
+					if hum.MoveDirection.Magnitude > 0 then
+						chr:TranslateBy(hum.MoveDirection)
+					end
+				end
+			end)
+		end
+
+		game.Players.LocalPlayer.Character.Animate.Disabled = true
+		local Char = game.Players.LocalPlayer.Character
+		local Hum = Char:FindFirstChildOfClass("Humanoid") or Char:FindFirstChildOfClass("AnimationController")
+
+		for i,v in next, Hum:GetPlayingAnimationTracks() do
+			v:AdjustSpeed(0)
+		end
+
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Landed,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Running,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming,false)
+		speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
+
+		if game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").RigType == Enum.HumanoidRigType.R6 then
+			local plr = game.Players.LocalPlayer
+			local torso = plr.Character.Torso
+			local flying = true
+			local deb = true
+			local ctrl = {f = 0, b = 0, l = 0, r = 0}
+			local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+			local maxspeed = 50
+			local speed = 0
+
+			local bg = Instance.new("BodyGyro", torso)
+			bg.P = 9e4
+			bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+			bg.cframe = torso.CFrame
+			local bv = Instance.new("BodyVelocity", torso)
+			bv.velocity = Vector3.new(0,0.1,0)
+			bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+
+			plr.Character.Humanoid.PlatformStand = true
+
+			while nowe == true or game:GetService("Players").LocalPlayer.Character.Humanoid.Health == 0 do
+				game:GetService("RunService").RenderStepped:Wait()
+
+				if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
+					speed = speed+.5+(speed/maxspeed)
+					if speed > maxspeed then
+						speed = maxspeed
+					end
+				elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
+					speed = speed-1
+					if speed < 0 then
+						speed = 0
+					end
+				end
+
+				if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
+					bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+					lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+				elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
+					bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+				else
+					bv.velocity = Vector3.new(0,0,0)
+				end
+
+				bg.cframe = game.Workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
+			end
+
+			ctrl = {f = 0, b = 0, l = 0, r = 0}
+			lastctrl = {f = 0, b = 0, l = 0, r = 0}
+			speed = 0
+			bg:Destroy()
+			bv:Destroy()
+			plr.Character.Humanoid.PlatformStand = false
+			game.Players.LocalPlayer.Character.Animate.Disabled = false
+			tpwalking = false
+
+		else
+			local plr = game.Players.LocalPlayer
+			local UpperTorso = plr.Character.UpperTorso
+			local flying = true
+			local deb = true
+			local ctrl = {f = 0, b = 0, l = 0, r = 0}
+			local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+			local maxspeed = 50
+			local speed = 0
+
+			local bg = Instance.new("BodyGyro", UpperTorso)
+			bg.P = 9e4
+			bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+			bg.cframe = UpperTorso.CFrame
+			local bv = Instance.new("BodyVelocity", UpperTorso)
+			bv.velocity = Vector3.new(0,0.1,0)
+			bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+
+			plr.Character.Humanoid.PlatformStand = true
+
+			while nowe == true or game:GetService("Players").LocalPlayer.Character.Humanoid.Health == 0 do
+				wait()
+
+				if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
+					speed = speed+.5+(speed/maxspeed)
+					if speed > maxspeed then
+						speed = maxspeed
+					end
+				elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
+					speed = speed-1
+					if speed < 0 then
+						speed = 0
+					end
+				end
+
+				if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
+					bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+					lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+				elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
+					bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+				else
+					bv.velocity = Vector3.new(0,0,0)
+				end
+
+				bg.cframe = game.Workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
+			end
+
+			ctrl = {f = 0, b = 0, l = 0, r = 0}
+			lastctrl = {f = 0, b = 0, l = 0, r = 0}
+			speed = 0
+			bg:Destroy()
+			bv:Destroy()
+			plr.Character.Humanoid.PlatformStand = false
+			game.Players.LocalPlayer.Character.Animate.Disabled = false
+			tpwalking = false
+		end
+
+	else 
+		nowe = false
+		updateFlyStatus()
+
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Landed,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Running,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics,true)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming,true)
+		speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
+	end
+end
+
+-- Controls for flight (WASD)
+local ctrl = {f = 0, b = 0, l = 0, r = 0}
+local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+
+local function handleInput(input, processed)
+	if processed then return end
+	if input.KeyCode == Enum.KeyCode.W then
+		ctrl.f = 1
+	elseif input.KeyCode == Enum.KeyCode.S then
+		ctrl.b = -1
+	elseif input.KeyCode == Enum.KeyCode.A then
+		ctrl.l = -1
+	elseif input.KeyCode == Enum.KeyCode.D then
+		ctrl.r = 1
+	end
+end
+
+local function handleInputEnd(input, processed)
+	if processed then return end
+	if input.KeyCode == Enum.KeyCode.W then
+		ctrl.f = 0
+	elseif input.KeyCode == Enum.KeyCode.S then
+		ctrl.b = 0
+	elseif input.KeyCode == Enum.KeyCode.A then
+		ctrl.l = 0
+	elseif input.KeyCode == Enum.KeyCode.D then
+		ctrl.r = 0
+	end
+end
+
+UserInputService.InputBegan:Connect(handleInput)
+UserInputService.InputEnded:Connect(handleInputEnd)
+
+-- NOCLIP SYSTEM
+local function toggleNoclip()
+	safeAnimateButton(NoclipButton)
+
+	if not noclipEnabled then
+		-- Enable Noclip
+		noclipEnabled = true
+		updateNoclipStatus()
+
+		noclipConnection = RunService.Stepped:Connect(function()
+			if not noclipEnabled then
+				noclipConnection:Disconnect()
+				return
+			end
+
+			local character = player.Character
+			if character then
+				for _, child in pairs(character:GetChildren()) do
+					if child:IsA("BasePart") then
+						child.CanCollide = false
+					end
+				end
+			end
+		end)
+	else
+		-- Disable Noclip
+		noclipEnabled = false
+		updateNoclipStatus()
+
+		if noclipConnection then
+			noclipConnection:Disconnect()
+			noclipConnection = nil
+		end
+
+		-- Restore collisions
+		local character = player.Character
+		if character then
+			for _, child in pairs(character:GetChildren()) do
+				if child:IsA("BasePart") then
+					child.CanCollide = true
+				end
+			end
+		end
+	end
+end
+
+-- ESP SYSTEM
+local function getRainbowColor(timeOffset)
+	local hue = (tick() + timeOffset) % 5 / 5
+	return Color3.fromHSV(hue, 1, 1)
+end
+
+local function createNameTag(player)
+	local character = player.Character
+	if not character then return end
+
+	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+	if not humanoidRootPart then return end
+
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name = "ESP_NameTag_" .. player.Name
+	billboard.Adornee = humanoidRootPart
+	billboard.Size = UDim2.new(0, 200, 0, 50)
+	billboard.StudsOffset = Vector3.new(0, 3.5, 0)
+	billboard.AlwaysOnTop = true
+	billboard.MaxDistance = 1000
+	billboard.Enabled = true
+	billboard.Parent = humanoidRootPart
+
+	local background = Instance.new("Frame")
+	background.Size = UDim2.new(1, 0, 1, 0)
+	background.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	background.BackgroundTransparency = 0.3
+	background.BorderSizePixel = 0
+	background.Parent = billboard
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 8)
+	corner.Parent = background
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(255, 255, 255)
+	stroke.Thickness = 1
+	stroke.Transparency = 0.2
+	stroke.Parent = background
+
+	local textLabel = Instance.new("TextLabel")
+	textLabel.Size = UDim2.new(1, -10, 1, -10)
+	textLabel.Position = UDim2.new(0, 5, 0, 5)
+	textLabel.BackgroundTransparency = 1
+	textLabel.Text = player.Name
+	textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	textLabel.TextSize = 14
+	textLabel.Font = Enum.Font.GothamBold
+	textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+	textLabel.TextStrokeTransparency = 0
+	textLabel.TextXAlignment = Enum.TextXAlignment.Center
+	textLabel.TextYAlignment = Enum.TextYAlignment.Center
+	textLabel.Parent = billboard
+
+	espNameTags[player] = billboard
+end
+
+local function createRainbowHighlight(player)
+	local character = player.Character
+	if not character then return end
+
+	local highlight = Instance.new("Highlight")
+	highlight.Name = "ESP_RainbowHighlight_" .. player.Name
+	highlight.Adornee = character
+	highlight.FillTransparency = 1
+	highlight.OutlineTransparency = 0
+	highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	highlight.Parent = character
+
+	espHighlights[player] = highlight
+
+	spawn(function()
+		while espEnabled and highlight and highlight.Parent do
+			highlight.OutlineColor = getRainbowColor(player.UserId * 0.1)
+			wait(0.1)
+		end
+	end)
+end
+
+local function createRainbowBeamToPlayer(otherPlayer)
+	local character = otherPlayer.Character
+	if not character then return end
+
+	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+	if not humanoidRootPart then return end
+
+	local localCharacter = player.Character
+	if not localCharacter then return end
+	local localHumanoidRootPart = localCharacter:FindFirstChild("HumanoidRootPart")
+	if not localHumanoidRootPart then return end
+
+	local beam = Instance.new("Beam")
+	beam.Name = "ESP_RainbowBeamToPlayer_" .. otherPlayer.Name
+	beam.FaceCamera = true
+	beam.Width0 = 0.2
+	beam.Width1 = 0.2
+	beam.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, getRainbowColor(otherPlayer.UserId * 0.05)),
+		ColorSequenceKeypoint.new(0.5, getRainbowColor(otherPlayer.UserId * 0.05 + 0.25)),
+		ColorSequenceKeypoint.new(1, getRainbowColor(otherPlayer.UserId * 0.05 + 0.5))
+	})
+	
+	local attachment0 = Instance.new("Attachment")
+	attachment0.Name = "BeamAttachment0"
+	attachment0.Parent = localHumanoidRootPart
+	
+	local attachment1 = Instance.new("Attachment")
+	attachment1.Name = "BeamAttachment1"
+	attachment1.Parent = humanoidRootPart
+	
+	beam.Attachment0 = attachment0
+	beam.Attachment1 = attachment1
+	beam.Parent = Workspace
+
+	espBeams[otherPlayer] = beam
+
+	spawn(function()
+		while espEnabled and beam and beam.Parent do
+			beam.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, getRainbowColor(otherPlayer.UserId * 0.05)),
+				ColorSequenceKeypoint.new(0.5, getRainbowColor(otherPlayer.UserId * 0.05 + 0.25)),
+				ColorSequenceKeypoint.new(1, getRainbowColor(otherPlayer.UserId * 0.05 + 0.5))
+			})
+			wait(0.1)
+		end
+	end)
+
+	return beam
+end
+
+local function removeESP(player)
+	if espNameTags[player] then
+		espNameTags[player]:Destroy()
+		espNameTags[player] = nil
+	end
+	if espHighlights[player] then
+		espHighlights[player]:Destroy()
+		espHighlights[player] = nil
+	end
+	if espBeams[player] then
+		espBeams[player]:Destroy()
+		espBeams[player] = nil
+	end
+end
+
+local function toggleESP()
+	safeAnimateButton(ESPButton)
+
+	if not espEnabled then
+		-- Enable ESP
+		espEnabled = true
+		updateESPStatus()
+
+		-- Create ESP for existing players
+		for _, otherPlayer in pairs(Players:GetPlayers()) do
+			if otherPlayer ~= player then
+				createNameTag(otherPlayer)
+				createRainbowHighlight(otherPlayer)
+				createRainbowBeamToPlayer(otherPlayer)
+			end
+		end
+
+		-- Handler for new players
+		espConnections.playerAdded = Players.PlayerAdded:Connect(function(otherPlayer)
+			if espEnabled then
+				otherPlayer.CharacterAdded:Connect(function(character)
+					if espEnabled then
+						wait(1)
+						createNameTag(otherPlayer)
+						createRainbowHighlight(otherPlayer)
+						createRainbowBeamToPlayer(otherPlayer)
+					end
+				end)
+				if otherPlayer.Character then
+					createNameTag(otherPlayer)
+					createRainbowHighlight(otherPlayer)
+					createRainbowBeamToPlayer(otherPlayer)
+				end
+			end
+		end)
+
+		-- Handler for player removal
+		espConnections.playerRemoving = Players.PlayerRemoving:Connect(function(otherPlayer)
+			removeESP(otherPlayer)
+		end)
+
+		-- Handler for player respawn
+		espConnections.characterAdded = player.CharacterAdded:Connect(function(character)
+			wait(2)
+			if espEnabled then
+				for _, otherPlayer in pairs(Players:GetPlayers()) do
+					if otherPlayer ~= player and otherPlayer.Character then
+						removeESP(otherPlayer)
+						createNameTag(otherPlayer)
+						createRainbowHighlight(otherPlayer)
+						createRainbowBeamToPlayer(otherPlayer)
+					end
+				end
+			end
+		end)
+
+	else
+		-- Disable ESP
+		espEnabled = false
+		updateESPStatus()
+
+		-- Remove all ESP elements
+		for otherPlayer in pairs(espNameTags) do
+			removeESP(otherPlayer)
+		end
+		espNameTags = {}
+		espHighlights = {}
+		espBeams = {}
+
+		-- Disconnect connections
+		for _, connection in pairs(espConnections) do
+			connection:Disconnect()
+		end
+		espConnections = {}
+	end
+end
+
+-- SPEED SLIDER FUNCTIONS
+local function setupFlySpeedSlider()
+	local dragging = false
+
+	FlySpeedSliderButton.MouseButton1Down:Connect(function()
+		dragging = true
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local sliderAbsolutePosition = FlySpeedSliderButton.AbsolutePosition.X
+			local sliderAbsoluteSize = FlySpeedSliderButton.AbsoluteSize.X
+			local mouseX = input.Position.X
+			
+			local relativeX = math.clamp(mouseX - sliderAbsolutePosition, 0, sliderAbsoluteSize)
+			local percentage = relativeX / sliderAbsoluteSize
+			
+			local newSpeed = math.floor(minFlySpeed + (maxFlySpeed - minFlySpeed) * percentage)
+			updateFlySpeed(newSpeed)
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = false
+		end
+	end)
+
+	-- Plus/Minus button functionality
+	FlySpeedPlusButton.MouseButton1Click:Connect(function()
+		safeAnimateButton(FlySpeedPlusButton)
+		updateFlySpeed(currentFlySpeed + 1)
+	end)
+
+	FlySpeedMinusButton.MouseButton1Click:Connect(function()
+		safeAnimateButton(FlySpeedMinusButton)
+		updateFlySpeed(currentFlySpeed - 1)
+	end)
+end
+
+local function setupWalkSpeedSlider()
+	local dragging = false
+
+	SpeedSliderButton.MouseButton1Down:Connect(function()
+		dragging = true
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local sliderAbsolutePosition = SpeedSliderButton.AbsolutePosition.X
+			local sliderAbsoluteSize = SpeedSliderButton.AbsoluteSize.X
+			local mouseX = input.Position.X
+			
+			local relativeX = math.clamp(mouseX - sliderAbsolutePosition, 0, sliderAbsoluteSize)
+			local percentage = relativeX / sliderAbsoluteSize
+			
+			local newSpeed = math.floor(minWalkSpeed + (maxWalkSpeed - minWalkSpeed) * percentage)
+			updateWalkSpeed(newSpeed)
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = false
+		end
+	end)
+
+	-- Plus/Minus button functionality
+	SpeedPlusButton.MouseButton1Click:Connect(function()
+		safeAnimateButton(SpeedPlusButton)
+		updateWalkSpeed(currentWalkSpeed + 1)
+	end)
+
+	SpeedMinusButton.MouseButton1Click:Connect(function()
+		safeAnimateButton(SpeedMinusButton)
+		updateWalkSpeed(currentWalkSpeed - 1)
+	end)
+end
+
+local function setupJumpPowerSlider()
+	local dragging = false
+
+	JumpSliderButton.MouseButton1Down:Connect(function()
+		dragging = true
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local sliderAbsolutePosition = JumpSliderButton.AbsolutePosition.X
+			local sliderAbsoluteSize = JumpSliderButton.AbsoluteSize.X
+			local mouseX = input.Position.X
+			
+			local relativeX = math.clamp(mouseX - sliderAbsolutePosition, 0, sliderAbsoluteSize)
+			local percentage = relativeX / sliderAbsoluteSize
+			
+			local newJump = math.floor(minJumpPower + (maxJumpPower - minJumpPower) * percentage)
+			updateJumpPower(newJump)
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = false
+		end
+	end)
+
+	-- Plus/Minus button functionality
+	JumpPlusButton.MouseButton1Click:Connect(function()
+		safeAnimateButton(JumpPlusButton)
+		updateJumpPower(currentJumpPower + 1)
+	end)
+
+	JumpMinusButton.MouseButton1Click:Connect(function()
+		safeAnimateButton(JumpMinusButton)
+		updateJumpPower(currentJumpPower - 1)
+	end)
+end
 
 -- BUTTON HANDLER FUNCTION
 local function setupButton(button, callback)
@@ -1148,10 +1746,19 @@ setupDarkGrayHoverEffects(NoclipButton)
 setupDarkGrayHoverEffects(SpeedButton)
 setupDarkGrayHoverEffects(JumpButton)
 setupDarkGrayHoverEffects(FloatingButton)
+setupDarkGrayHoverEffects(FlySpeedMinusButton)
+setupDarkGrayHoverEffects(FlySpeedPlusButton)
+setupDarkGrayHoverEffects(SpeedMinusButton)
+setupDarkGrayHoverEffects(SpeedPlusButton)
+setupDarkGrayHoverEffects(JumpMinusButton)
+setupDarkGrayHoverEffects(JumpPlusButton)
 
--- Set up window dragging
+-- Set up window dragging and speed sliders
 setupWindowDrag()
 setupFloatingButtonDrag()
+setupFlySpeedSlider()
+setupWalkSpeedSlider()
+setupJumpPowerSlider()
 
 -- Initialize speeds and statuses
 updateFlySpeed(1)
