@@ -19,8 +19,8 @@ ScreenGui.ResetOnSpawn = false
 -- Main frame with semi-transparent background
 local MainFrame = Instance.new("ScrollingFrame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 300, 0, 350) -- Increased height for new buttons
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -175)
+MainFrame.Size = UDim2.new(0, 300, 0, 450) -- Increased height for new sliders
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -225)
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MainFrame.BackgroundTransparency = 0.3
 MainFrame.BorderSizePixel = 0
@@ -332,6 +332,192 @@ local function createFlyButton(positionY)
 	return buttonContainer, button, expandFrame, imageLabel, flyToggleButton, flyStatusLabel, speedLabel, sliderFill, sliderButton, minusButton, plusButton
 end
 
+-- Function to create WalkSpeed button with slider
+local function createWalkSpeedButton(positionY)
+	local buttonContainer, button, expandFrame, imageLabel = createExpandableButton("🏃‍♂️ WalkSpeed: 16", positionY)
+
+	-- Speed label
+	local speedLabel = Instance.new("TextLabel")
+	speedLabel.Size = UDim2.new(1, -10, 0, 20)
+	speedLabel.Position = UDim2.new(0, 5, 0, 5)
+	speedLabel.BackgroundTransparency = 1
+	speedLabel.Text = "WalkSpeed: 16"
+	speedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	speedLabel.TextSize = 10
+	speedLabel.Font = Enum.Font.Gotham
+	speedLabel.TextXAlignment = Enum.TextXAlignment.Left
+	speedLabel.ZIndex = 4
+	speedLabel.Parent = expandFrame
+
+	-- Slider container
+	local sliderBackground = Instance.new("Frame")
+	sliderBackground.Size = UDim2.new(1, -10, 0, 20)
+	sliderBackground.Position = UDim2.new(0, 5, 0, 30)
+	sliderBackground.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	sliderBackground.BorderSizePixel = 0
+	sliderBackground.ZIndex = 4
+	sliderBackground.Parent = expandFrame
+
+	local sliderCorner = Instance.new("UICorner")
+	sliderCorner.CornerRadius = UDim.new(0, 4)
+	sliderCorner.Parent = sliderBackground
+
+	local sliderFill = Instance.new("Frame")
+	sliderFill.Size = UDim2.new(0, 0, 1, 0)
+	sliderFill.Position = UDim2.new(0, 0, 0, 0)
+	sliderFill.BackgroundColor3 = Color3.fromRGB(100, 255, 100)
+	sliderFill.BorderSizePixel = 0
+	sliderFill.ZIndex = 5
+	sliderFill.Parent = sliderBackground
+
+	local fillCorner = Instance.new("UICorner")
+	fillCorner.CornerRadius = UDim.new(0, 4)
+	fillCorner.Parent = sliderFill
+
+	local sliderButton = Instance.new("TextButton")
+	sliderButton.Size = UDim2.new(1, 0, 1, 0)
+	sliderButton.Position = UDim2.new(0, 0, 0, 0)
+	sliderButton.BackgroundTransparency = 1
+	sliderButton.Text = ""
+	sliderButton.ZIndex = 6
+	sliderButton.Parent = sliderBackground
+
+	-- Quick adjustment buttons
+	local speedControls = Instance.new("Frame")
+	speedControls.Size = UDim2.new(1, -10, 0, 15)
+	speedControls.Position = UDim2.new(0, 5, 0, 55)
+	speedControls.BackgroundTransparency = 1
+	speedControls.ZIndex = 4
+	speedControls.Parent = expandFrame
+
+	local minusButton = Instance.new("TextButton")
+	minusButton.Size = UDim2.new(0, 20, 1, 0)
+	minusButton.Position = UDim2.new(0, 0, 0, 0)
+	minusButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	minusButton.BackgroundTransparency = 0.3
+	minusButton.Text = "-"
+	minusButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	minusButton.TextSize = 12
+	minusButton.Font = Enum.Font.GothamBold
+	minusButton.ZIndex = 4
+	minusButton.Parent = speedControls
+
+	local minusCorner = Instance.new("UICorner")
+	minusCorner.CornerRadius = UDim.new(0, 3)
+	minusCorner.Parent = minusButton
+
+	local plusButton = Instance.new("TextButton")
+	plusButton.Size = UDim2.new(0, 20, 1, 0)
+	plusButton.Position = UDim2.new(1, -20, 0, 0)
+	plusButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	plusButton.BackgroundTransparency = 0.3
+	plusButton.Text = "+"
+	plusButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	plusButton.TextSize = 12
+	plusButton.Font = Enum.Font.GothamBold
+	plusButton.ZIndex = 4
+	plusButton.Parent = speedControls
+
+	local plusCorner = Instance.new("UICorner")
+	plusCorner.CornerRadius = UDim.new(0, 3)
+	plusCorner.Parent = plusButton
+
+	return buttonContainer, button, expandFrame, imageLabel, speedLabel, sliderFill, sliderButton, minusButton, plusButton
+end
+
+-- Function to create JumpPower button with slider
+local function createJumpPowerButton(positionY)
+	local buttonContainer, button, expandFrame, imageLabel = createExpandableButton("🦘 JumpPower: 50", positionY)
+
+	-- Jump label
+	local jumpLabel = Instance.new("TextLabel")
+	jumpLabel.Size = UDim2.new(1, -10, 0, 20)
+	jumpLabel.Position = UDim2.new(0, 5, 0, 5)
+	jumpLabel.BackgroundTransparency = 1
+	jumpLabel.Text = "JumpPower: 50"
+	jumpLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	jumpLabel.TextSize = 10
+	jumpLabel.Font = Enum.Font.Gotham
+	jumpLabel.TextXAlignment = Enum.TextXAlignment.Left
+	jumpLabel.ZIndex = 4
+	jumpLabel.Parent = expandFrame
+
+	-- Slider container
+	local sliderBackground = Instance.new("Frame")
+	sliderBackground.Size = UDim2.new(1, -10, 0, 20)
+	sliderBackground.Position = UDim2.new(0, 5, 0, 30)
+	sliderBackground.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	sliderBackground.BorderSizePixel = 0
+	sliderBackground.ZIndex = 4
+	sliderBackground.Parent = expandFrame
+
+	local sliderCorner = Instance.new("UICorner")
+	sliderCorner.CornerRadius = UDim.new(0, 4)
+	sliderCorner.Parent = sliderBackground
+
+	local sliderFill = Instance.new("Frame")
+	sliderFill.Size = UDim2.new(0, 0, 1, 0)
+	sliderFill.Position = UDim2.new(0, 0, 0, 0)
+	sliderFill.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+	sliderFill.BorderSizePixel = 0
+	sliderFill.ZIndex = 5
+	sliderFill.Parent = sliderBackground
+
+	local fillCorner = Instance.new("UICorner")
+	fillCorner.CornerRadius = UDim.new(0, 4)
+	fillCorner.Parent = sliderFill
+
+	local sliderButton = Instance.new("TextButton")
+	sliderButton.Size = UDim2.new(1, 0, 1, 0)
+	sliderButton.Position = UDim2.new(0, 0, 0, 0)
+	sliderButton.BackgroundTransparency = 1
+	sliderButton.Text = ""
+	sliderButton.ZIndex = 6
+	sliderButton.Parent = sliderBackground
+
+	-- Quick adjustment buttons
+	local jumpControls = Instance.new("Frame")
+	jumpControls.Size = UDim2.new(1, -10, 0, 15)
+	jumpControls.Position = UDim2.new(0, 5, 0, 55)
+	jumpControls.BackgroundTransparency = 1
+	jumpControls.ZIndex = 4
+	jumpControls.Parent = expandFrame
+
+	local minusButton = Instance.new("TextButton")
+	minusButton.Size = UDim2.new(0, 20, 1, 0)
+	minusButton.Position = UDim2.new(0, 0, 0, 0)
+	minusButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	minusButton.BackgroundTransparency = 0.3
+	minusButton.Text = "-"
+	minusButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	minusButton.TextSize = 12
+	minusButton.Font = Enum.Font.GothamBold
+	minusButton.ZIndex = 4
+	minusButton.Parent = jumpControls
+
+	local minusCorner = Instance.new("UICorner")
+	minusCorner.CornerRadius = UDim.new(0, 3)
+	minusCorner.Parent = minusButton
+
+	local plusButton = Instance.new("TextButton")
+	plusButton.Size = UDim2.new(0, 20, 1, 0)
+	plusButton.Position = UDim2.new(1, -20, 0, 0)
+	plusButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	plusButton.BackgroundTransparency = 0.3
+	plusButton.Text = "+"
+	plusButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	plusButton.TextSize = 12
+	plusButton.Font = Enum.Font.GothamBold
+	plusButton.ZIndex = 4
+	plusButton.Parent = jumpControls
+
+	local plusCorner = Instance.new("UICorner")
+	plusCorner.CornerRadius = UDim.new(0, 3)
+	plusCorner.Parent = plusButton
+
+	return buttonContainer, button, expandFrame, imageLabel, jumpLabel, sliderFill, sliderButton, minusButton, plusButton
+end
+
 -- Function to create simple button
 local function createSimpleButton(text, positionY)
 	local buttonContainer = Instance.new("Frame")
@@ -368,17 +554,19 @@ local function createSimpleButton(text, positionY)
 end
 
 -- Create buttons
-local FlyButtonContainer, FlyButton, FlyExpandFrame, FlyImageLabel, FlyToggleButton, FlyStatusLabel, SpeedLabel, SpeedSliderFill, SpeedSliderButton, SpeedMinusButton, SpeedPlusButton = createFlyButton(0)
+local FlyButtonContainer, FlyButton, FlyExpandFrame, FlyImageLabel, FlyToggleButton, FlyStatusLabel, FlySpeedLabel, FlySpeedSliderFill, FlySpeedSliderButton, FlySpeedMinusButton, FlySpeedPlusButton = createFlyButton(0)
 local ESPButtonContainer, ESPButton = createSimpleButton("🎯 ESP: Disabled", 45)
 local NoclipButtonContainer, NoclipButton = createSimpleButton("🚫 Noclip: Disabled", 90)
-local SpeedButtonContainer, SpeedButton = createSimpleButton("🏃‍♂️ WalkSpeed: 16", 135)
-local JumpButtonContainer, JumpButton = createSimpleButton("🦘 JumpPower: 50", 180)
+local SpeedButtonContainer, SpeedButton, SpeedExpandFrame, SpeedImageLabel, SpeedLabel, SpeedSliderFill, SpeedSliderButton, SpeedMinusButton, SpeedPlusButton = createWalkSpeedButton(135)
+local JumpButtonContainer, JumpButton, JumpExpandFrame, JumpImageLabel, JumpLabel, JumpSliderFill, JumpSliderButton, JumpMinusButton, JumpPlusButton = createJumpPowerButton(180)
 
 -- Variables for systems
 local nowe = false
 local speeds = 1
 local tpwalking = false
 local flyExpanded = false
+local speedExpanded = false
+local jumpExpanded = false
 local noclipEnabled = false
 local noclipConnection = nil
 local espEnabled = false
@@ -388,12 +576,17 @@ local espHighlights = {}
 local espBeams = {}
 
 -- Speed and Jump settings
-local minSpeed = 16
-local maxSpeed = 350
-local currentSpeed = 16
-local minJump = 50
-local maxJump = 285
-local currentJump = 50
+local minFlySpeed = 1
+local maxFlySpeed = 15
+local currentFlySpeed = 1
+
+local minWalkSpeed = 16
+local maxWalkSpeed = 350
+local currentWalkSpeed = 16
+
+local minJumpPower = 50
+local maxJumpPower = 285
+local currentJumpPower = 50
 
 -- Function to move buttons when opening/closing menus
 local function updateButtonPositions()
@@ -420,10 +613,25 @@ local function updateButtonPositions()
 
 	-- Speed button
 	SpeedButtonContainer.Position = UDim2.new(0, 0, 0, currentY)
-	currentY = currentY + 40 + 5
+	currentY = currentY + 40
+
+	-- If Speed expanded, add its height
+	if speedExpanded then
+		currentY = currentY + 80 + 5
+	else
+		currentY = currentY + 5
+	end
 
 	-- Jump button
 	JumpButtonContainer.Position = UDim2.new(0, 0, 0, currentY)
+	currentY = currentY + 40
+
+	-- If Jump expanded, add its height
+	if jumpExpanded then
+		currentY = currentY + 80 + 5
+	else
+		currentY = currentY + 5
+	end
 
 	-- Update content size
 	updateContentSize()
@@ -524,43 +732,19 @@ local function updateNoclipStatus()
 	end
 end
 
--- Function to update WalkSpeed
-local function updateWalkSpeed()
-	local character = player.Character
-	if character then
-		local humanoid = character:FindFirstChildOfClass("Humanoid")
-		if humanoid then
-			humanoid.WalkSpeed = currentSpeed
-			SpeedButton.Text = "   🏃‍♂️ WalkSpeed: " .. currentSpeed
-		end
-	end
-end
-
--- Function to update JumpPower
-local function updateJumpPower()
-	local character = player.Character
-	if character then
-		local humanoid = character:FindFirstChildOfClass("Humanoid")
-		if humanoid then
-			humanoid.JumpPower = currentJump
-			JumpButton.Text = "   🦘 JumpPower: " .. currentJump
-		end
-	end
-end
-
--- Function to update speed
-local function updateSpeed(newSpeed)
-	currentSpeed = math.clamp(newSpeed, minSpeed, maxSpeed)
-	speeds = currentSpeed
+-- Function to update Fly speed
+local function updateFlySpeed(newSpeed)
+	currentFlySpeed = math.clamp(newSpeed, minFlySpeed, maxFlySpeed)
+	speeds = currentFlySpeed
 
 	-- Update text
-	SpeedLabel.Text = "Fly Speed: " .. currentSpeed
+	FlySpeedLabel.Text = "Fly Speed: " .. currentFlySpeed
 
 	-- Update slider position (0% to 100%)
-	local fillPercentage = (currentSpeed - minSpeed) / (maxSpeed - minSpeed)
+	local fillPercentage = (currentFlySpeed - minFlySpeed) / (maxFlySpeed - minFlySpeed)
 
 	-- Animate slider update
-	local tween = TweenService:Create(SpeedSliderFill, TweenInfo.new(0.2), {
+	local tween = TweenService:Create(FlySpeedSliderFill, TweenInfo.new(0.2), {
 		Size = UDim2.new(fillPercentage, 0, 1, 0)
 	})
 	tween:Play()
@@ -580,6 +764,60 @@ local function updateSpeed(newSpeed)
 					end
 				end
 			end)
+		end
+	end
+end
+
+-- Function to update WalkSpeed
+local function updateWalkSpeed(newSpeed)
+	currentWalkSpeed = math.clamp(newSpeed, minWalkSpeed, maxWalkSpeed)
+	
+	-- Update text
+	SpeedLabel.Text = "WalkSpeed: " .. currentWalkSpeed
+	SpeedButton.Text = "   🏃‍♂️ WalkSpeed: " .. currentWalkSpeed
+
+	-- Update slider position (0% to 100%)
+	local fillPercentage = (currentWalkSpeed - minWalkSpeed) / (maxWalkSpeed - minWalkSpeed)
+
+	-- Animate slider update
+	local tween = TweenService:Create(SpeedSliderFill, TweenInfo.new(0.2), {
+		Size = UDim2.new(fillPercentage, 0, 1, 0)
+	})
+	tween:Play()
+
+	-- Apply to character
+	local character = player.Character
+	if character then
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.WalkSpeed = currentWalkSpeed
+		end
+	end
+end
+
+-- Function to update JumpPower
+local function updateJumpPower(newJump)
+	currentJumpPower = math.clamp(newJump, minJumpPower, maxJumpPower)
+	
+	-- Update text
+	JumpLabel.Text = "JumpPower: " .. currentJumpPower
+	JumpButton.Text = "   🦘 JumpPower: " .. currentJumpPower
+
+	-- Update slider position (0% to 100%)
+	local fillPercentage = (currentJumpPower - minJumpPower) / (maxJumpPower - minJumpPower)
+
+	-- Animate slider update
+	local tween = TweenService:Create(JumpSliderFill, TweenInfo.new(0.2), {
+		Size = UDim2.new(fillPercentage, 0, 1, 0)
+	})
+	tween:Play()
+
+	-- Apply to character
+	local character = player.Character
+	if character then
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.JumpPower = currentJumpPower
 		end
 	end
 end
@@ -614,6 +852,76 @@ local function toggleFlyExpand()
 
 		tween.Completed:Connect(function()
 			flyExpanded = true
+			updateButtonPositions()
+		end)
+	end
+end
+
+-- Function for WalkSpeed expand/collapse animation
+local function toggleSpeedExpand()
+	safeAnimateButton(SpeedButton)
+
+	if speedExpanded then
+		-- Collapse
+		animateIcon(SpeedImageLabel, false)
+
+		local tween = TweenService:Create(SpeedExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(1, 0, 0, 0)
+		})
+		tween:Play()
+
+		tween.Completed:Connect(function()
+			SpeedExpandFrame.Visible = false
+			speedExpanded = false
+			updateButtonPositions()
+		end)
+	else
+		-- Expand
+		SpeedExpandFrame.Visible = true
+		animateIcon(SpeedImageLabel, true)
+
+		local tween = TweenService:Create(SpeedExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(1, 0, 0, 80)
+		})
+		tween:Play()
+
+		tween.Completed:Connect(function()
+			speedExpanded = true
+			updateButtonPositions()
+		end)
+	end
+end
+
+-- Function for JumpPower expand/collapse animation
+local function toggleJumpExpand()
+	safeAnimateButton(JumpButton)
+
+	if jumpExpanded then
+		-- Collapse
+		animateIcon(JumpImageLabel, false)
+
+		local tween = TweenService:Create(JumpExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(1, 0, 0, 0)
+		})
+		tween:Play()
+
+		tween.Completed:Connect(function()
+			JumpExpandFrame.Visible = false
+			jumpExpanded = false
+			updateButtonPositions()
+		end)
+	else
+		-- Expand
+		JumpExpandFrame.Visible = true
+		animateIcon(JumpImageLabel, true)
+
+		local tween = TweenService:Create(JumpExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(1, 0, 0, 80)
+		})
+		tween:Play()
+
+		tween.Completed:Connect(function()
+			jumpExpanded = true
 			updateButtonPositions()
 		end)
 	end
@@ -881,46 +1189,6 @@ local function toggleNoclip()
 	end
 end
 
--- WALKSPEED SYSTEM
-local function toggleWalkSpeed()
-	safeAnimateButton(SpeedButton)
-
-	-- Cycle through speed values
-	if currentSpeed == minSpeed then
-		currentSpeed = 50
-	elseif currentSpeed == 50 then
-		currentSpeed = 100
-	elseif currentSpeed == 100 then
-		currentSpeed = 200
-	elseif currentSpeed == 200 then
-		currentSpeed = maxSpeed
-	else
-		currentSpeed = minSpeed
-	end
-
-	updateWalkSpeed()
-end
-
--- JUMPPOWER SYSTEM
-local function toggleJumpPower()
-	safeAnimateButton(JumpButton)
-
-	-- Cycle through jump values
-	if currentJump == minJump then
-		currentJump = 100
-	elseif currentJump == 100 then
-		currentJump = 150
-	elseif currentJump == 150 then
-		currentJump = 200
-	elseif currentJump == 200 then
-		currentJump = maxJump
-	else
-		currentJump = minJump
-	end
-
-	updateJumpPower()
-end
-
 -- RAINBOW ESP SYSTEM
 local function getRainbowColor(timeOffset)
 	local hue = (tick() + timeOffset) % 5 / 5
@@ -1153,8 +1421,47 @@ local function toggleESP()
 	end
 end
 
--- SPEED SLIDER FUNCTION
-local function setupSpeedSlider()
+-- SPEED SLIDER FUNCTIONS
+local function setupFlySpeedSlider()
+	local dragging = false
+
+	FlySpeedSliderButton.MouseButton1Down:Connect(function()
+		dragging = true
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local sliderAbsolutePosition = FlySpeedSliderButton.AbsolutePosition.X
+			local sliderAbsoluteSize = FlySpeedSliderButton.AbsoluteSize.X
+			local mouseX = input.Position.X
+			
+			local relativeX = math.clamp(mouseX - sliderAbsolutePosition, 0, sliderAbsoluteSize)
+			local percentage = relativeX / sliderAbsoluteSize
+			
+			local newSpeed = math.floor(minFlySpeed + (maxFlySpeed - minFlySpeed) * percentage)
+			updateFlySpeed(newSpeed)
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = false
+		end
+	end)
+
+	-- Plus/Minus button functionality
+	FlySpeedPlusButton.MouseButton1Click:Connect(function()
+		safeAnimateButton(FlySpeedPlusButton)
+		updateFlySpeed(currentFlySpeed + 1)
+	end)
+
+	FlySpeedMinusButton.MouseButton1Click:Connect(function()
+		safeAnimateButton(FlySpeedMinusButton)
+		updateFlySpeed(currentFlySpeed - 1)
+	end)
+end
+
+local function setupWalkSpeedSlider()
 	local dragging = false
 
 	SpeedSliderButton.MouseButton1Down:Connect(function()
@@ -1170,8 +1477,8 @@ local function setupSpeedSlider()
 			local relativeX = math.clamp(mouseX - sliderAbsolutePosition, 0, sliderAbsoluteSize)
 			local percentage = relativeX / sliderAbsoluteSize
 			
-			local newSpeed = math.floor(minSpeed + (maxSpeed - minSpeed) * percentage)
-			updateSpeed(newSpeed)
+			local newSpeed = math.floor(minWalkSpeed + (maxWalkSpeed - minWalkSpeed) * percentage)
+			updateWalkSpeed(newSpeed)
 		end
 	end)
 
@@ -1184,12 +1491,51 @@ local function setupSpeedSlider()
 	-- Plus/Minus button functionality
 	SpeedPlusButton.MouseButton1Click:Connect(function()
 		safeAnimateButton(SpeedPlusButton)
-		updateSpeed(currentSpeed + 1)
+		updateWalkSpeed(currentWalkSpeed + 1)
 	end)
 
 	SpeedMinusButton.MouseButton1Click:Connect(function()
 		safeAnimateButton(SpeedMinusButton)
-		updateSpeed(currentSpeed - 1)
+		updateWalkSpeed(currentWalkSpeed - 1)
+	end)
+end
+
+local function setupJumpPowerSlider()
+	local dragging = false
+
+	JumpSliderButton.MouseButton1Down:Connect(function()
+		dragging = true
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local sliderAbsolutePosition = JumpSliderButton.AbsolutePosition.X
+			local sliderAbsoluteSize = JumpSliderButton.AbsoluteSize.X
+			local mouseX = input.Position.X
+			
+			local relativeX = math.clamp(mouseX - sliderAbsolutePosition, 0, sliderAbsoluteSize)
+			local percentage = relativeX / sliderAbsoluteSize
+			
+			local newJump = math.floor(minJumpPower + (maxJumpPower - minJumpPower) * percentage)
+			updateJumpPower(newJump)
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = false
+		end
+	end)
+
+	-- Plus/Minus button functionality
+	JumpPlusButton.MouseButton1Click:Connect(function()
+		safeAnimateButton(JumpPlusButton)
+		updateJumpPower(currentJumpPower + 1)
+	end)
+
+	JumpMinusButton.MouseButton1Click:Connect(function()
+		safeAnimateButton(JumpMinusButton)
+		updateJumpPower(currentJumpPower - 1)
 	end)
 end
 
@@ -1244,8 +1590,8 @@ setupButton(FlyButton, toggleFlyExpand)
 setupButton(FlyToggleButton, toggleFly)
 setupButton(ESPButton, toggleESP)
 setupButton(NoclipButton, toggleNoclip)
-setupButton(SpeedButton, toggleWalkSpeed)
-setupButton(JumpButton, toggleJumpPower)
+setupButton(SpeedButton, toggleSpeedExpand)
+setupButton(JumpButton, toggleJumpExpand)
 
 setupButton(CloseButton, function()
 	safeAnimateButton(CloseButton)
@@ -1269,18 +1615,24 @@ setupDarkGrayHoverEffects(ESPButton)
 setupDarkGrayHoverEffects(NoclipButton)
 setupDarkGrayHoverEffects(SpeedButton)
 setupDarkGrayHoverEffects(JumpButton)
+setupDarkGrayHoverEffects(FlySpeedMinusButton)
+setupDarkGrayHoverEffects(FlySpeedPlusButton)
 setupDarkGrayHoverEffects(SpeedMinusButton)
 setupDarkGrayHoverEffects(SpeedPlusButton)
+setupDarkGrayHoverEffects(JumpMinusButton)
+setupDarkGrayHoverEffects(JumpPlusButton)
 
--- Set up window dragging and speed slider
+-- Set up window dragging and speed sliders
 setupWindowDrag()
-setupSpeedSlider()
+setupFlySpeedSlider()
+setupWalkSpeedSlider()
+setupJumpPowerSlider()
 
--- Initialize speed and statuses
-updateSpeed(1)
+-- Initialize speeds and statuses
+updateFlySpeed(1)
+updateWalkSpeed(16)
+updateJumpPower(50)
 updateNoclipStatus()
-updateWalkSpeed()
-updateJumpPower()
 
 -- Update content size after creating all elements
 updateContentSize()
@@ -1291,8 +1643,8 @@ MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.BackgroundTransparency = 1
 
 local openTween = TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-	Size = UDim2.new(0, 300, 0, 350),
-	Position = UDim2.new(0.5, -150, 0.5, -175),
+	Size = UDim2.new(0, 300, 0, 450),
+	Position = UDim2.new(0.5, -150, 0.5, -225),
 	BackgroundTransparency = 0.3
 })
 openTween:Play()
