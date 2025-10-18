@@ -574,38 +574,97 @@ local function createJumpPowerButton(positionY)
 	return buttonContainer, button, expandFrame, imageLabel, jumpLabel, sliderFill, sliderButton, minusButton, plusButton
 end
 
--- Function to create Map Settings button with transparency slider
+-- Function to create Map Settings button with tabs
 local function createMapSettingsButton(positionY)
 	local buttonContainer, button, expandFrame, imageLabel = createExpandableButton("🗺️ Map Settings", positionY)
 
+	-- Tabs container
+	local tabsContainer = Instance.new("Frame")
+	tabsContainer.Size = UDim2.new(1, -10, 0, 25)
+	tabsContainer.Position = UDim2.new(0, 5, 0, 5)
+	tabsContainer.BackgroundTransparency = 1
+	tabsContainer.ZIndex = 4
+	tabsContainer.Parent = expandFrame
+
+	-- Transparency tab button
+	local transparencyTab = Instance.new("TextButton")
+	transparencyTab.Size = UDim2.new(0.5, -2, 1, 0)
+	transparencyTab.Position = UDim2.new(0, 0, 0, 0)
+	transparencyTab.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	transparencyTab.BackgroundTransparency = 0.2
+	transparencyTab.Text = "Transparency"
+	transparencyTab.TextColor3 = Color3.fromRGB(255, 255, 255)
+	transparencyTab.TextSize = 10
+	transparencyTab.Font = Enum.Font.Gotham
+	transparencyTab.ZIndex = 4
+	transparencyTab.Parent = tabsContainer
+
+	local transparencyTabCorner = Instance.new("UICorner")
+	transparencyTabCorner.CornerRadius = UDim.new(0, 4)
+	transparencyTabCorner.Parent = transparencyTab
+
+	-- Effects tab button
+	local effectsTab = Instance.new("TextButton")
+	effectsTab.Size = UDim2.new(0.5, -2, 1, 0)
+	effectsTab.Position = UDim2.new(0.5, 2, 0, 0)
+	effectsTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	effectsTab.BackgroundTransparency = 0.2
+	effectsTab.Text = "Effects"
+	effectsTab.TextColor3 = Color3.fromRGB(200, 200, 200)
+	effectsTab.TextSize = 10
+	effectsTab.Font = Enum.Font.Gotham
+	effectsTab.ZIndex = 4
+	effectsTab.Parent = tabsContainer
+
+	local effectsTabCorner = Instance.new("UICorner")
+	effectsTabCorner.CornerRadius = UDim.new(0, 4)
+	effectsTabCorner.Parent = effectsTab
+
+	-- Content frame for tabs
+	local tabContent = Instance.new("Frame")
+	tabContent.Size = UDim2.new(1, -10, 0, 200)
+	tabContent.Position = UDim2.new(0, 5, 0, 35)
+	tabContent.BackgroundTransparency = 1
+	tabContent.ZIndex = 4
+	tabContent.Parent = expandFrame
+
+	-- TRANSPARENCY TAB CONTENT
+	local transparencyContent = Instance.new("Frame")
+	transparencyContent.Size = UDim2.new(1, 0, 1, 0)
+	transparencyContent.Position = UDim2.new(0, 0, 0, 0)
+	transparencyContent.BackgroundTransparency = 1
+	transparencyContent.ZIndex = 4
+	transparencyContent.Visible = true
+	transparencyContent.Parent = tabContent
+
 	-- Transparency label
 	local transparencyLabel = Instance.new("TextLabel")
-	transparencyLabel.Size = UDim2.new(1, -10, 0, 20)
-	transparencyLabel.Position = UDim2.new(0, 5, 0, 5)
+	transparencyLabel.Size = UDim2.new(1, 0, 0, 20)
+	transparencyLabel.Position = UDim2.new(0, 0, 0, 0)
 	transparencyLabel.BackgroundTransparency = 1
-	transparencyLabel.Text = "Map Transparency: 1.00"
+	transparencyLabel.Text = "Transparency: 0.00"
 	transparencyLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 	transparencyLabel.TextSize = 10
 	transparencyLabel.Font = Enum.Font.Gotham
 	transparencyLabel.TextXAlignment = Enum.TextXAlignment.Left
 	transparencyLabel.ZIndex = 4
-	transparencyLabel.Parent = expandFrame
+	transparencyLabel.Parent = transparencyContent
 
 	-- Slider container
 	local sliderBackground = Instance.new("Frame")
-	sliderBackground.Size = UDim2.new(1, -10, 0, 20)
-	sliderBackground.Position = UDim2.new(0, 5, 0, 30)
+	sliderBackground.Size = UDim2.new(1, 0, 0, 20)
+	sliderBackground.Position = UDim2.new(0, 0, 0, 25)
 	sliderBackground.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 	sliderBackground.BorderSizePixel = 0
 	sliderBackground.ZIndex = 4
-	sliderBackground.Parent = expandFrame
+	sliderBackground.Parent = transparencyContent
 
 	local sliderCorner = Instance.new("UICorner")
 	sliderCorner.CornerRadius = UDim.new(0, 4)
 	sliderCorner.Parent = sliderBackground
 
 	local sliderFill = Instance.new("Frame")
-	sliderFill.Size = UDim2.new(1, 0, 1, 0)
+	sliderFill.Size = UDim2.new(0, 0, 1, 0)
 	sliderFill.Position = UDim2.new(0, 0, 0, 0)
 	sliderFill.BackgroundColor3 = Color3.fromRGB(255, 200, 100)
 	sliderFill.BorderSizePixel = 0
@@ -626,11 +685,11 @@ local function createMapSettingsButton(positionY)
 
 	-- Quick adjustment buttons
 	local transparencyControls = Instance.new("Frame")
-	transparencyControls.Size = UDim2.new(1, -10, 0, 15)
-	transparencyControls.Position = UDim2.new(0, 5, 0, 55)
+	transparencyControls.Size = UDim2.new(1, 0, 0, 15)
+	transparencyControls.Position = UDim2.new(0, 0, 0, 50)
 	transparencyControls.BackgroundTransparency = 1
 	transparencyControls.ZIndex = 4
-	transparencyControls.Parent = expandFrame
+	transparencyControls.Parent = transparencyContent
 
 	local minusButton = Instance.new("TextButton")
 	minusButton.Size = UDim2.new(0, 20, 1, 0)
@@ -664,82 +723,299 @@ local function createMapSettingsButton(positionY)
 	plusCorner.CornerRadius = UDim.new(0, 3)
 	plusCorner.Parent = plusButton
 
-	return buttonContainer, button, expandFrame, imageLabel, transparencyLabel, sliderFill, sliderButton, minusButton, plusButton
-end
+	-- EFFECTS TAB CONTENT
+	local effectsContent = Instance.new("Frame")
+	effectsContent.Size = UDim2.new(1, 0, 1, 0)
+	effectsContent.Position = UDim2.new(0, 0, 0, 0)
+	effectsContent.BackgroundTransparency = 1
+	effectsContent.ZIndex = 4
+	effectsContent.Visible = false
+	effectsContent.Parent = tabContent
 
--- Function to create Effects button with particle effects
-local function createEffectsButton(positionY)
-	local buttonContainer, button, expandFrame, imageLabel = createExpandableButton("✨ Effects", positionY)
-
-	-- Fire effect button
-	local fireButton = Instance.new("TextButton")
-	fireButton.Size = UDim2.new(1, -10, 0, 25)
-	fireButton.Position = UDim2.new(0, 5, 0, 5)
-	fireButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-	fireButton.BackgroundTransparency = 0.2
-	fireButton.Text = "🔥 Fire Effect"
-	fireButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	fireButton.TextSize = 11
-	fireButton.Font = Enum.Font.Gotham
-	fireButton.ZIndex = 4
-	fireButton.Parent = expandFrame
+	-- Fire effect section
+	local fireSection = Instance.new("Frame")
+	fireSection.Size = UDim2.new(1, 0, 0, 80)
+	fireSection.Position = UDim2.new(0, 0, 0, 0)
+	fireSection.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	fireSection.BackgroundTransparency = 0.1
+	fireSection.ZIndex = 4
+	fireSection.Parent = effectsContent
 
 	local fireCorner = Instance.new("UICorner")
 	fireCorner.CornerRadius = UDim.new(0, 4)
-	fireCorner.Parent = fireButton
+	fireCorner.Parent = fireSection
 
-	-- Sparkles effect button
-	local sparklesButton = Instance.new("TextButton")
-	sparklesButton.Size = UDim2.new(1, -10, 0, 25)
-	sparklesButton.Position = UDim2.new(0, 5, 0, 35)
-	sparklesButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-	sparklesButton.BackgroundTransparency = 0.2
-	sparklesButton.Text = "✨ Sparkles Effect"
-	sparklesButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	sparklesButton.TextSize = 11
-	sparklesButton.Font = Enum.Font.Gotham
-	sparklesButton.ZIndex = 4
-	sparklesButton.Parent = expandFrame
+	local fireLabel = Instance.new("TextLabel")
+	fireLabel.Size = UDim2.new(1, -10, 0, 15)
+	fireLabel.Position = UDim2.new(0, 5, 0, 5)
+	fireLabel.BackgroundTransparency = 1
+	fireLabel.Text = "🔥 Fire Effect"
+	fireLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
+	fireLabel.TextSize = 10
+	fireLabel.Font = Enum.Font.GothamBold
+	fireLabel.TextXAlignment = Enum.TextXAlignment.Left
+	fireLabel.ZIndex = 4
+	fireLabel.Parent = fireSection
+
+	local fireToggle = Instance.new("TextButton")
+	fireToggle.Size = UDim2.new(0, 60, 0, 20)
+	fireToggle.Position = UDim2.new(1, -65, 0, 5)
+	fireToggle.BackgroundColor3 = Color3.fromRGB(150, 60, 60)
+	fireToggle.BackgroundTransparency = 0.2
+	fireToggle.Text = "OFF"
+	fireToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+	fireToggle.TextSize = 9
+	fireToggle.Font = Enum.Font.Gotham
+	fireToggle.ZIndex = 4
+	fireToggle.Parent = fireSection
+
+	local fireToggleCorner = Instance.new("UICorner")
+	fireToggleCorner.CornerRadius = UDim.new(0, 3)
+	fireToggleCorner.Parent = fireToggle
+
+	local fireColor1Label = Instance.new("TextLabel")
+	fireColor1Label.Size = UDim2.new(0.4, 0, 0, 15)
+	fireColor1Label.Position = UDim2.new(0, 5, 0, 30)
+	fireColor1Label.BackgroundTransparency = 1
+	fireColor1Label.Text = "Color 1:"
+	fireColor1Label.TextColor3 = Color3.fromRGB(200, 200, 200)
+	fireColor1Label.TextSize = 8
+	fireColor1Label.Font = Enum.Font.Gotham
+	fireColor1Label.TextXAlignment = Enum.TextXAlignment.Left
+	fireColor1Label.ZIndex = 4
+	fireColor1Label.Parent = fireSection
+
+	local fireColor1Preview = Instance.new("Frame")
+	fireColor1Preview.Size = UDim2.new(0, 40, 0, 15)
+	fireColor1Preview.Position = UDim2.new(0.4, 0, 0, 30)
+	fireColor1Preview.BackgroundColor3 = Color3.fromRGB(1, 0.5, 0)
+	fireColor1Preview.BorderSizePixel = 0
+	fireColor1Preview.ZIndex = 4
+	fireColor1Preview.Parent = fireSection
+
+	local fireColor1Corner = Instance.new("UICorner")
+	fireColor1Corner.CornerRadius = UDim.new(0, 2)
+	fireColor1Corner.Parent = fireColor1Preview
+
+	local fireColor2Label = Instance.new("TextLabel")
+	fireColor2Label.Size = UDim2.new(0.4, 0, 0, 15)
+	fireColor2Label.Position = UDim2.new(0, 5, 0, 50)
+	fireColor2Label.BackgroundTransparency = 1
+	fireColor2Label.Text = "Color 2:"
+	fireColor2Label.TextColor3 = Color3.fromRGB(200, 200, 200)
+	fireColor2Label.TextSize = 8
+	fireColor2Label.Font = Enum.Font.Gotham
+	fireColor2Label.TextXAlignment = Enum.TextXAlignment.Left
+	fireColor2Label.ZIndex = 4
+	fireColor2Label.Parent = fireSection
+
+	local fireColor2Preview = Instance.new("Frame")
+	fireColor2Preview.Size = UDim2.new(0, 40, 0, 15)
+	fireColor2Preview.Position = UDim2.new(0.4, 0, 0, 50)
+	fireColor2Preview.BackgroundColor3 = Color3.fromRGB(1, 1, 0)
+	fireColor2Preview.BorderSizePixel = 0
+	fireColor2Preview.ZIndex = 4
+	fireColor2Preview.Parent = fireSection
+
+	local fireColor2Corner = Instance.new("UICorner")
+	fireColor2Corner.CornerRadius = UDim.new(0, 2)
+	fireColor2Corner.Parent = fireColor2Preview
+
+	local fireHeatLabel = Instance.new("TextLabel")
+	fireHeatLabel.Size = UDim2.new(0.6, 0, 0, 15)
+	fireHeatLabel.Position = UDim2.new(0.5, 5, 0, 30)
+	fireHeatLabel.BackgroundTransparency = 1
+	fireHeatLabel.Text = "Heat: 5"
+	fireHeatLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	fireHeatLabel.TextSize = 8
+	fireHeatLabel.Font = Enum.Font.Gotham
+	fireHeatLabel.TextXAlignment = Enum.TextXAlignment.Left
+	fireHeatLabel.ZIndex = 4
+	fireHeatLabel.Parent = fireSection
+
+	local fireSizeLabel = Instance.new("TextLabel")
+	fireSizeLabel.Size = UDim2.new(0.6, 0, 0, 15)
+	fireSizeLabel.Position = UDim2.new(0.5, 5, 0, 50)
+	fireSizeLabel.BackgroundTransparency = 1
+	fireSizeLabel.Text = "Size: 5"
+	fireSizeLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	fireSizeLabel.TextSize = 8
+	fireSizeLabel.Font = Enum.Font.Gotham
+	fireSizeLabel.TextXAlignment = Enum.TextXAlignment.Left
+	fireSizeLabel.ZIndex = 4
+	fireSizeLabel.Parent = fireSection
+
+	-- Sparkles effect section
+	local sparklesSection = Instance.new("Frame")
+	sparklesSection.Size = UDim2.new(1, 0, 0, 50)
+	sparklesSection.Position = UDim2.new(0, 0, 0, 85)
+	sparklesSection.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	sparklesSection.BackgroundTransparency = 0.1
+	sparklesSection.ZIndex = 4
+	sparklesSection.Parent = effectsContent
 
 	local sparklesCorner = Instance.new("UICorner")
 	sparklesCorner.CornerRadius = UDim.new(0, 4)
-	sparklesCorner.Parent = sparklesButton
+	sparklesCorner.Parent = sparklesSection
 
-	-- Smoke effect button
-	local smokeButton = Instance.new("TextButton")
-	smokeButton.Size = UDim2.new(1, -10, 0, 25)
-	smokeButton.Position = UDim2.new(0, 5, 0, 65)
-	smokeButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-	smokeButton.BackgroundTransparency = 0.2
-	smokeButton.Text = "💨 Smoke Effect"
-	smokeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	smokeButton.TextSize = 11
-	smokeButton.Font = Enum.Font.Gotham
-	smokeButton.ZIndex = 4
-	smokeButton.Parent = expandFrame
+	local sparklesLabel = Instance.new("TextLabel")
+	sparklesLabel.Size = UDim2.new(1, -10, 0, 15)
+	sparklesLabel.Position = UDim2.new(0, 5, 0, 5)
+	sparklesLabel.BackgroundTransparency = 1
+	sparklesLabel.Text = "✨ Sparkles Effect"
+	sparklesLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
+	sparklesLabel.TextSize = 10
+	sparklesLabel.Font = Enum.Font.GothamBold
+	sparklesLabel.TextXAlignment = Enum.TextXAlignment.Left
+	sparklesLabel.ZIndex = 4
+	sparklesLabel.Parent = sparklesSection
+
+	local sparklesToggle = Instance.new("TextButton")
+	sparklesToggle.Size = UDim2.new(0, 60, 0, 20)
+	sparklesToggle.Position = UDim2.new(1, -65, 0, 5)
+	sparklesToggle.BackgroundColor3 = Color3.fromRGB(150, 60, 60)
+	sparklesToggle.BackgroundTransparency = 0.2
+	sparklesToggle.Text = "OFF"
+	sparklesToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+	sparklesToggle.TextSize = 9
+	sparklesToggle.Font = Enum.Font.Gotham
+	sparklesToggle.ZIndex = 4
+	sparklesToggle.Parent = sparklesSection
+
+	local sparklesToggleCorner = Instance.new("UICorner")
+	sparklesToggleCorner.CornerRadius = UDim.new(0, 3)
+	sparklesToggleCorner.Parent = sparklesToggle
+
+	local sparklesColorLabel = Instance.new("TextLabel")
+	sparklesColorLabel.Size = UDim2.new(0.4, 0, 0, 15)
+	sparklesColorLabel.Position = UDim2.new(0, 5, 0, 30)
+	sparklesColorLabel.BackgroundTransparency = 1
+	sparklesColorLabel.Text = "Color:"
+	sparklesColorLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	sparklesColorLabel.TextSize = 8
+	sparklesColorLabel.Font = Enum.Font.Gotham
+	sparklesColorLabel.TextXAlignment = Enum.TextXAlignment.Left
+	sparklesColorLabel.ZIndex = 4
+	sparklesColorLabel.Parent = sparklesSection
+
+	local sparklesColorPreview = Instance.new("Frame")
+	sparklesColorPreview.Size = UDim2.new(0, 40, 0, 15)
+	sparklesColorPreview.Position = UDim2.new(0.4, 0, 0, 30)
+	sparklesColorPreview.BackgroundColor3 = Color3.fromRGB(0, 1, 1)
+	sparklesColorPreview.BorderSizePixel = 0
+	sparklesColorPreview.ZIndex = 4
+	sparklesColorPreview.Parent = sparklesSection
+
+	local sparklesColorCorner = Instance.new("UICorner")
+	sparklesColorCorner.CornerRadius = UDim.new(0, 2)
+	sparklesColorCorner.Parent = sparklesColorPreview
+
+	-- Smoke effect section
+	local smokeSection = Instance.new("Frame")
+	smokeSection.Size = UDim2.new(1, 0, 0, 80)
+	smokeSection.Position = UDim2.new(0, 0, 0, 140)
+	smokeSection.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	smokeSection.BackgroundTransparency = 0.1
+	smokeSection.ZIndex = 4
+	smokeSection.Parent = effectsContent
 
 	local smokeCorner = Instance.new("UICorner")
 	smokeCorner.CornerRadius = UDim.new(0, 4)
-	smokeCorner.Parent = smokeButton
+	smokeCorner.Parent = smokeSection
 
-	-- Remove effects button
-	local removeButton = Instance.new("TextButton")
-	removeButton.Size = UDim2.new(1, -10, 0, 25)
-	removeButton.Position = UDim2.new(0, 5, 0, 95)
-	removeButton.BackgroundColor3 = Color3.fromRGB(150, 60, 60)
-	removeButton.BackgroundTransparency = 0.2
-	removeButton.Text = "❌ Remove All Effects"
-	removeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	removeButton.TextSize = 11
-	removeButton.Font = Enum.Font.Gotham
-	removeButton.ZIndex = 4
-	removeButton.Parent = expandFrame
+	local smokeLabel = Instance.new("TextLabel")
+	smokeLabel.Size = UDim2.new(1, -10, 0, 15)
+	smokeLabel.Position = UDim2.new(0, 5, 0, 5)
+	smokeLabel.BackgroundTransparency = 1
+	smokeLabel.Text = "💨 Smoke Effect"
+	smokeLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	smokeLabel.TextSize = 10
+	smokeLabel.Font = Enum.Font.GothamBold
+	smokeLabel.TextXAlignment = Enum.TextXAlignment.Left
+	smokeLabel.ZIndex = 4
+	smokeLabel.Parent = smokeSection
 
-	local removeCorner = Instance.new("UICorner")
-	removeCorner.CornerRadius = UDim.new(0, 4)
-	removeCorner.Parent = removeButton
+	local smokeToggle = Instance.new("TextButton")
+	smokeToggle.Size = UDim2.new(0, 60, 0, 20)
+	smokeToggle.Position = UDim2.new(1, -65, 0, 5)
+	smokeToggle.BackgroundColor3 = Color3.fromRGB(150, 60, 60)
+	smokeToggle.BackgroundTransparency = 0.2
+	smokeToggle.Text = "OFF"
+	smokeToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+	smokeToggle.TextSize = 9
+	smokeToggle.Font = Enum.Font.Gotham
+	smokeToggle.ZIndex = 4
+	smokeToggle.Parent = smokeSection
 
-	return buttonContainer, button, expandFrame, imageLabel, fireButton, sparklesButton, smokeButton, removeButton
+	local smokeToggleCorner = Instance.new("UICorner")
+	smokeToggleCorner.CornerRadius = UDim.new(0, 3)
+	smokeToggleCorner.Parent = smokeToggle
+
+	local smokeColorLabel = Instance.new("TextLabel")
+	smokeColorLabel.Size = UDim2.new(0.4, 0, 0, 15)
+	smokeColorLabel.Position = UDim2.new(0, 5, 0, 30)
+	smokeColorLabel.BackgroundTransparency = 1
+	smokeColorLabel.Text = "Color:"
+	smokeColorLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	smokeColorLabel.TextSize = 8
+	smokeColorLabel.Font = Enum.Font.Gotham
+	smokeColorLabel.TextXAlignment = Enum.TextXAlignment.Left
+	smokeColorLabel.ZIndex = 4
+	smokeColorLabel.Parent = smokeSection
+
+	local smokeColorPreview = Instance.new("Frame")
+	smokeColorPreview.Size = UDim2.new(0, 40, 0, 15)
+	smokeColorPreview.Position = UDim2.new(0.4, 0, 0, 30)
+	smokeColorPreview.BackgroundColor3 = Color3.fromRGB(0.7, 0.7, 0.7)
+	smokeColorPreview.BorderSizePixel = 0
+	smokeColorPreview.ZIndex = 4
+	smokeColorPreview.Parent = smokeSection
+
+	local smokeColorCorner = Instance.new("UICorner")
+	smokeColorCorner.CornerRadius = UDim.new(0, 2)
+	smokeColorCorner.Parent = smokeColorPreview
+
+	local smokeOpacityLabel = Instance.new("TextLabel")
+	smokeOpacityLabel.Size = UDim2.new(0.6, 0, 0, 15)
+	smokeOpacityLabel.Position = UDim2.new(0.5, 5, 0, 30)
+	smokeOpacityLabel.BackgroundTransparency = 1
+	smokeOpacityLabel.Text = "Opacity: 0.5"
+	smokeOpacityLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	smokeOpacityLabel.TextSize = 8
+	smokeOpacityLabel.Font = Enum.Font.Gotham
+	smokeOpacityLabel.TextXAlignment = Enum.TextXAlignment.Left
+	smokeOpacityLabel.ZIndex = 4
+	smokeOpacityLabel.Parent = smokeSection
+
+	local smokeSizeLabel = Instance.new("TextLabel")
+	smokeSizeLabel.Size = UDim2.new(0.6, 0, 0, 15)
+	smokeSizeLabel.Position = UDim2.new(0.5, 5, 0, 50)
+	smokeSizeLabel.BackgroundTransparency = 1
+	smokeSizeLabel.Text = "Size: 3"
+	smokeSizeLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	smokeSizeLabel.TextSize = 8
+	smokeSizeLabel.Font = Enum.Font.Gotham
+	smokeSizeLabel.TextXAlignment = Enum.TextXAlignment.Left
+	smokeSizeLabel.ZIndex = 4
+	smokeSizeLabel.Parent = smokeSection
+
+	local smokeRiseLabel = Instance.new("TextLabel")
+	smokeRiseLabel.Size = UDim2.new(0.6, 0, 0, 15)
+	smokeRiseLabel.Position = UDim2.new(0.5, 5, 0, 65)
+	smokeRiseLabel.BackgroundTransparency = 1
+	smokeRiseLabel.Text = "Rise: 2"
+	smokeRiseLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	smokeRiseLabel.TextSize = 8
+	smokeRiseLabel.Font = Enum.Font.Gotham
+	smokeRiseLabel.TextXAlignment = Enum.TextXAlignment.Left
+	smokeRiseLabel.ZIndex = 4
+	smokeRiseLabel.Parent = smokeSection
+
+	return buttonContainer, button, expandFrame, imageLabel, transparencyLabel, sliderFill, sliderButton, minusButton, plusButton, 
+	       transparencyTab, effectsTab, transparencyContent, effectsContent,
+	       fireToggle, fireColor1Preview, fireColor2Preview, fireHeatLabel, fireSizeLabel,
+	       sparklesToggle, sparklesColorPreview,
+	       smokeToggle, smokeColorPreview, smokeOpacityLabel, smokeSizeLabel, smokeRiseLabel
 end
 
 -- Function to create simple button
@@ -783,8 +1059,11 @@ local ESPButtonContainer, ESPButton = createSimpleButton("🎯 ESP: Disabled", 4
 local NoclipButtonContainer, NoclipButton = createSimpleButton("🚫 Noclip: Disabled", 90)
 local SpeedButtonContainer, SpeedButton, SpeedExpandFrame, SpeedImageLabel, SpeedLabel, SpeedSliderFill, SpeedSliderButton, SpeedMinusButton, SpeedPlusButton = createWalkSpeedButton(135)
 local JumpButtonContainer, JumpButton, JumpExpandFrame, JumpImageLabel, JumpLabel, JumpSliderFill, JumpSliderButton, JumpMinusButton, JumpPlusButton = createJumpPowerButton(180)
-local MapButtonContainer, MapButton, MapExpandFrame, MapImageLabel, MapTransparencyLabel, MapSliderFill, MapSliderButton, MapMinusButton, MapPlusButton = createMapSettingsButton(225)
-local EffectsButtonContainer, EffectsButton, EffectsExpandFrame, EffectsImageLabel, FireButton, SparklesButton, SmokeButton, RemoveEffectsButton = createEffectsButton(270)
+local MapButtonContainer, MapButton, MapExpandFrame, MapImageLabel, MapTransparencyLabel, MapSliderFill, MapSliderButton, MapMinusButton, MapPlusButton, 
+      TransparencyTab, EffectsTab, TransparencyContent, EffectsContent,
+      FireToggle, FireColor1Preview, FireColor2Preview, FireHeatLabel, FireSizeLabel,
+      SparklesToggle, SparklesColorPreview,
+      SmokeToggle, SmokeColorPreview, SmokeOpacityLabel, SmokeSizeLabel, SmokeRiseLabel = createMapSettingsButton(225)
 
 -- Variables for systems
 local nowe = false
@@ -794,7 +1073,6 @@ local flyExpanded = false
 local speedExpanded = false
 local jumpExpanded = false
 local mapExpanded = false
-local effectsExpanded = false
 local noclipEnabled = false
 local noclipConnection = nil
 local espEnabled = false
@@ -819,11 +1097,29 @@ local currentJumpPower = 50
 -- Map transparency settings
 local minTransparency = 0
 local maxTransparency = 1
-local currentTransparency = 1
+local currentTransparency = 0
 local originalTransparencies = {}
 
 -- Effects settings
 local activeEffects = {}
+local fireEnabled = false
+local sparklesEnabled = false
+local smokeEnabled = false
+
+-- Fire effect settings
+local fireColor1 = Color3.new(1, 0.5, 0)
+local fireColor2 = Color3.new(1, 1, 0)
+local fireHeat = 5
+local fireSize = 5
+
+-- Sparkles effect settings
+local sparklesColor = Color3.new(0, 1, 1)
+
+-- Smoke effect settings
+local smokeColor = Color3.new(0.7, 0.7, 0.7)
+local smokeOpacity = 0.5
+local smokeSize = 3
+local smokeRiseVelocity = 2
 
 -- Function to move buttons when opening/closing menus
 local function updateButtonPositions()
@@ -876,18 +1172,7 @@ local function updateButtonPositions()
 
 	-- If Map expanded, add its height
 	if mapExpanded then
-		currentY = currentY + 80 + 5
-	else
-		currentY = currentY + 5
-	end
-
-	-- Effects button
-	EffectsButtonContainer.Position = UDim2.new(0, 0, 0, currentY)
-	currentY = currentY + 40
-
-	-- If Effects expanded, add its height
-	if effectsExpanded then
-		currentY = currentY + 130 + 5
+		currentY = currentY + 270 + 5
 	else
 		currentY = currentY + 5
 	end
@@ -1086,7 +1371,7 @@ local function updateMapTransparency(newTransparency)
 	currentTransparency = math.clamp(newTransparency, minTransparency, maxTransparency)
 	
 	-- Update text with 2 decimal places
-	MapTransparencyLabel.Text = "Map Transparency: " .. string.format("%.2f", currentTransparency)
+	MapTransparencyLabel.Text = "Transparency: " .. string.format("%.2f", currentTransparency)
 
 	-- Update slider position (0% to 100%)
 	local fillPercentage = currentTransparency / maxTransparency
@@ -1105,8 +1390,8 @@ local function updateMapTransparency(newTransparency)
 				originalTransparencies[obj] = obj.Transparency
 			end
 			
-			-- Apply new transparency
-			obj.Transparency = currentTransparency
+			-- Apply additional transparency to original
+			obj.Transparency = math.clamp(originalTransparencies[obj] + currentTransparency, 0, 1)
 		end
 	end
 end
@@ -1240,47 +1525,12 @@ local function toggleMapExpand()
 		animateIcon(MapImageLabel, true)
 
 		local tween = TweenService:Create(MapExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-			Size = UDim2.new(1, 0, 0, 80)
+			Size = UDim2.new(1, 0, 0, 270)
 		})
 		tween:Play()
 
 		tween.Completed:Connect(function()
 			mapExpanded = true
-			updateButtonPositions()
-		end)
-	end
-end
-
--- Function for Effects expand/collapse animation
-local function toggleEffectsExpand()
-	safeAnimateButton(EffectsButton)
-
-	if effectsExpanded then
-		-- Collapse
-		animateIcon(EffectsImageLabel, false)
-
-		local tween = TweenService:Create(EffectsExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-			Size = UDim2.new(1, 0, 0, 0)
-		})
-		tween:Play()
-
-		tween.Completed:Connect(function()
-			EffectsExpandFrame.Visible = false
-			effectsExpanded = false
-			updateButtonPositions()
-		end)
-	else
-		-- Expand
-		EffectsExpandFrame.Visible = true
-		animateIcon(EffectsImageLabel, true)
-
-		local tween = TweenService:Create(EffectsExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-			Size = UDim2.new(1, 0, 0, 130)
-		})
-		tween:Play()
-
-		tween.Completed:Connect(function()
-			effectsExpanded = true
 			updateButtonPositions()
 		end)
 	end
@@ -1894,7 +2144,7 @@ local function toggleESP()
 end
 
 -- EFFECTS SYSTEM
-local function addFireEffect()
+local function updateFireEffect()
 	-- Remove existing fire effects first
 	for _, effect in pairs(activeEffects) do
 		if effect:IsA("Fire") then
@@ -1902,15 +2152,17 @@ local function addFireEffect()
 		end
 	end
 
+	if not fireEnabled then return end
+
 	-- Add fire to all parts in workspace except those with Humanoid
 	for _, obj in pairs(Workspace:GetDescendants()) do
 		if obj:IsA("BasePart") and not obj:FindFirstAncestorWhichIsA("Model"):FindFirstChildOfClass("Humanoid") then
 			local fire = Instance.new("Fire")
 			fire.Name = "CustomFireEffect"
-			fire.Size = math.min(obj.Size.Magnitude * 0.5, 10)
-			fire.Heat = 5
-			fire.Color = Color3.new(1, 0.5, 0)
-			fire.SecondaryColor = Color3.new(1, 1, 0)
+			fire.Size = math.min(obj.Size.Magnitude * 0.5, fireSize)
+			fire.Heat = fireHeat
+			fire.Color = fireColor1
+			fire.SecondaryColor = fireColor2
 			fire.Parent = obj
 			
 			table.insert(activeEffects, fire)
@@ -1918,7 +2170,7 @@ local function addFireEffect()
 	end
 end
 
-local function addSparklesEffect()
+local function updateSparklesEffect()
 	-- Remove existing sparkles effects first
 	for _, effect in pairs(activeEffects) do
 		if effect:IsA("Sparkles") then
@@ -1926,12 +2178,14 @@ local function addSparklesEffect()
 		end
 	end
 
+	if not sparklesEnabled then return end
+
 	-- Add sparkles to all parts in workspace except those with Humanoid
 	for _, obj in pairs(Workspace:GetDescendants()) do
 		if obj:IsA("BasePart") and not obj:FindFirstAncestorWhichIsA("Model"):FindFirstChildOfClass("Humanoid") then
 			local sparkles = Instance.new("Sparkles")
 			sparkles.Name = "CustomSparklesEffect"
-			sparkles.SparkleColor = Color3.new(0, 1, 1)
+			sparkles.SparkleColor = sparklesColor
 			sparkles.Parent = obj
 			
 			table.insert(activeEffects, sparkles)
@@ -1939,7 +2193,7 @@ local function addSparklesEffect()
 	end
 end
 
-local function addSmokeEffect()
+local function updateSmokeEffect()
 	-- Remove existing smoke effects first
 	for _, effect in pairs(activeEffects) do
 		if effect:IsA("Smoke") then
@@ -1947,15 +2201,17 @@ local function addSmokeEffect()
 		end
 	end
 
+	if not smokeEnabled then return end
+
 	-- Add smoke to all parts in workspace except those with Humanoid
 	for _, obj in pairs(Workspace:GetDescendants()) do
 		if obj:IsA("BasePart") and not obj:FindFirstAncestorWhichIsA("Model"):FindFirstChildOfClass("Humanoid") then
 			local smoke = Instance.new("Smoke")
 			smoke.Name = "CustomSmokeEffect"
-			smoke.Size = math.min(obj.Size.Magnitude * 0.3, 5)
-			smoke.Opacity = 0.5
-			smoke.Color = Color3.new(0.7, 0.7, 0.7)
-			smoke.RiseVelocity = 2
+			smoke.Size = math.min(obj.Size.Magnitude * 0.3, smokeSize)
+			smoke.Opacity = smokeOpacity
+			smoke.Color = smokeColor
+			smoke.RiseVelocity = smokeRiseVelocity
 			smoke.Parent = obj
 			
 			table.insert(activeEffects, smoke)
@@ -2131,6 +2387,66 @@ local function setupMapTransparencySlider()
 	end)
 end
 
+-- TAB SWITCHING FUNCTION
+local function switchToTab(selectedTab, otherTab, selectedContent, otherContent)
+	-- Update tab appearances
+	selectedTab.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	selectedTab.TextColor3 = Color3.fromRGB(255, 255, 255)
+	
+	otherTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	otherTab.TextColor3 = Color3.fromRGB(200, 200, 200)
+	
+	-- Update content visibility
+	selectedContent.Visible = true
+	otherContent.Visible = false
+end
+
+-- EFFECTS TOGGLE FUNCTIONS
+local function toggleFireEffect()
+	safeAnimateButton(FireToggle)
+	fireEnabled = not fireEnabled
+	
+	if fireEnabled then
+		FireToggle.Text = "ON"
+		FireToggle.BackgroundColor3 = Color3.fromRGB(60, 150, 60)
+		updateFireEffect()
+	else
+		FireToggle.Text = "OFF"
+		FireToggle.BackgroundColor3 = Color3.fromRGB(150, 60, 60)
+		updateFireEffect()
+	end
+end
+
+local function toggleSparklesEffect()
+	safeAnimateButton(SparklesToggle)
+	sparklesEnabled = not sparklesEnabled
+	
+	if sparklesEnabled then
+		SparklesToggle.Text = "ON"
+		SparklesToggle.BackgroundColor3 = Color3.fromRGB(60, 150, 60)
+		updateSparklesEffect()
+	else
+		SparklesToggle.Text = "OFF"
+		SparklesToggle.BackgroundColor3 = Color3.fromRGB(150, 60, 60)
+		updateSparklesEffect()
+	end
+end
+
+local function toggleSmokeEffect()
+	safeAnimateButton(SmokeToggle)
+	smokeEnabled = not smokeEnabled
+	
+	if smokeEnabled then
+		SmokeToggle.Text = "ON"
+		SmokeToggle.BackgroundColor3 = Color3.fromRGB(60, 150, 60)
+		updateSmokeEffect()
+	else
+		SmokeToggle.Text = "OFF"
+		SmokeToggle.BackgroundColor3 = Color3.fromRGB(150, 60, 60)
+		updateSmokeEffect()
+	end
+end
+
 -- BUTTON HANDLER FUNCTION
 local function setupButton(button, callback)
 	button.InputBegan:Connect(function(input)
@@ -2148,28 +2464,21 @@ setupButton(NoclipButton, toggleNoclip)
 setupButton(SpeedButton, toggleSpeedExpand)
 setupButton(JumpButton, toggleJumpExpand)
 setupButton(MapButton, toggleMapExpand)
-setupButton(EffectsButton, toggleEffectsExpand)
 setupButton(MinimizeButton, minimizeWindow)
 
-setupButton(FireButton, function()
-	safeAnimateButton(FireButton)
-	addFireEffect()
+-- Map Settings tabs
+setupButton(TransparencyTab, function()
+	switchToTab(TransparencyTab, EffectsTab, TransparencyContent, EffectsContent)
 end)
 
-setupButton(SparklesButton, function()
-	safeAnimateButton(SparklesButton)
-	addSparklesEffect()
+setupButton(EffectsTab, function()
+	switchToTab(EffectsTab, TransparencyTab, EffectsContent, TransparencyContent)
 end)
 
-setupButton(SmokeButton, function()
-	safeAnimateButton(SmokeButton)
-	addSmokeEffect()
-end)
-
-setupButton(RemoveEffectsButton, function()
-	safeAnimateButton(RemoveEffectsButton)
-	removeAllEffects()
-end)
+-- Effects toggles
+setupButton(FireToggle, toggleFireEffect)
+setupButton(SparklesToggle, toggleSparklesEffect)
+setupButton(SmokeToggle, toggleSmokeEffect)
 
 setupButton(CloseButton, function()
 	safeAnimateButton(CloseButton)
@@ -2185,30 +2494,17 @@ setupButton(CloseButton, function()
 	ScreenGui:Destroy()
 end)
 
--- Apply hover effects
-setupDarkGrayHoverEffects(FlyButton)
-setupDarkGrayHoverEffects(CloseButton)
-setupDarkGrayHoverEffects(MinimizeButton)
-setupDarkGrayHoverEffects(FlyToggleButton)
-setupDarkGrayHoverEffects(ESPButton)
-setupDarkGrayHoverEffects(NoclipButton)
-setupDarkGrayHoverEffects(SpeedButton)
-setupDarkGrayHoverEffects(JumpButton)
-setupDarkGrayHoverEffects(MapButton)
-setupDarkGrayHoverEffects(EffectsButton)
-setupDarkGrayHoverEffects(FloatingButton)
-setupDarkGrayHoverEffects(FlySpeedMinusButton)
-setupDarkGrayHoverEffects(FlySpeedPlusButton)
-setupDarkGrayHoverEffects(SpeedMinusButton)
-setupDarkGrayHoverEffects(SpeedPlusButton)
-setupDarkGrayHoverEffects(JumpMinusButton)
-setupDarkGrayHoverEffects(JumpPlusButton)
-setupDarkGrayHoverEffects(MapMinusButton)
-setupDarkGrayHoverEffects(MapPlusButton)
-setupDarkGrayHoverEffects(FireButton)
-setupDarkGrayHoverEffects(SparklesButton)
-setupDarkGrayHoverEffects(SmokeButton)
-setupDarkGrayHoverEffects(RemoveEffectsButton)
+-- Apply hover effects to all buttons
+local allButtons = {
+	FlyButton, CloseButton, MinimizeButton, FlyToggleButton, ESPButton, NoclipButton, 
+	SpeedButton, JumpButton, MapButton, FloatingButton, FlySpeedMinusButton, FlySpeedPlusButton,
+	SpeedMinusButton, SpeedPlusButton, JumpMinusButton, JumpPlusButton, MapMinusButton, MapPlusButton,
+	TransparencyTab, EffectsTab, FireToggle, SparklesToggle, SmokeToggle
+}
+
+for _, button in pairs(allButtons) do
+	setupDarkGrayHoverEffects(button)
+end
 
 -- Set up window dragging and sliders
 setupWindowDrag()
@@ -2222,7 +2518,7 @@ setupMapTransparencySlider()
 updateFlySpeed(1)
 updateWalkSpeed(16)
 updateJumpPower(50)
-updateMapTransparency(1)
+updateMapTransparency(0)  -- Start with 0 transparency
 updateNoclipStatus()
 
 -- Update content size after creating all elements
