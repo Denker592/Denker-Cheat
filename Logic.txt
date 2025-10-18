@@ -1,406 +1,254 @@
-local Version = "5.23 beta"
+local Version = "5.24"
 
--- Безопасное получение сервисов
-local function getService(serviceName)
-    local success, service = pcall(function()
-        return game:GetService(serviceName)
-    end)
-    return success and service or nil
+-- Ожидаем загрузку игры
+wait(2)
+
+-- Базовые проверки
+if not game:IsLoaded() then
+    game.Loaded:Wait()
 end
 
-local Players = getService("Players")
-local TweenService = getService("TweenService")
-local UserInputService = getService("UserInputService")
-local RunService = getService("RunService")
-local Workspace = getService("Workspace")
-local Lighting = getService("Lighting")
-
-if not Players or not TweenService then
-    warn("Essential services not available!")
-    return
-end
-
--- Безопасное получение игрока
+-- Ожидаем появление игрока
+local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 if not player then
-    warn("Player not found!")
-    return
+    repeat wait() until Players.LocalPlayer
+    player = Players.LocalPlayer
 end
 
-local mouse = player:GetMouse()
-
--- Функция для безопасного создания экземпляров
-local function safeCreateInstance(className, properties)
-    local success, instance = pcall(function()
-        local inst = Instance.new(className)
-        if properties then
-            for property, value in pairs(properties) do
-                if inst[property] ~= nil then
-                    inst[property] = value
-                end
-            end
-        end
-        return inst
-    end)
-    return success and instance or nil
-end
-
--- Функция для безопасного применения твинов
-local function safeTween(object, tweenInfo, properties)
-    if object and object.Parent then
-        local success, tween = pcall(function()
-            return TweenService:Create(object, tweenInfo, properties)
-        end)
-        if success and tween then
-            tween:Play()
-            return tween
-        end
-    end
-    return nil
+-- Ожидаем PlayerGui
+local playerGui = player:FindFirstChild("PlayerGui")
+if not playerGui then
+    repeat wait() until player:FindFirstChild("PlayerGui")
+    playerGui = player.PlayerGui
 end
 
 -- Создаем основной GUI
-local ScreenGui = safeCreateInstance("ScreenGui", {
-    Name = "DenkerChetGUI",
-    Parent = player:WaitForChild("PlayerGui"),
-    ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-    ResetOnSpawn = false
-})
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DenkerChetGUI"
+ScreenGui.Parent = playerGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.ResetOnSpawn = false
 
-if not ScreenGui then
-    warn("Failed to create ScreenGui!")
-    return
-end
-
--- Плавающая кнопка
-local FloatingButton = safeCreateInstance("ImageButton", {
-    Name = "FloatingButton",
-    Size = UDim2.new(0, 50, 0, 50),
-    Position = UDim2.new(0, 20, 0, 20),
-    BackgroundColor3 = Color3.fromRGB(25, 25, 25),
-    BackgroundTransparency = 0.2,
-    Image = "rbxthumb://type=Asset&id=85901190532963&w=150&h=150",
-    Visible = false,
-    ZIndex = 10,
-    Parent = ScreenGui
-})
-
--- Скругленные углы для плавающей кнопки
-local FloatingCorner = safeCreateInstance("UICorner", {
-    CornerRadius = UDim.new(0, 12),
-    Parent = FloatingButton
-})
-
--- Обводка для плавающей кнопки
-local FloatingStroke = safeCreateInstance("UIStroke", {
-    Color = Color3.fromRGB(80, 80, 80),
-    Thickness = 2,
-    Transparency = 0.3,
-    Parent = FloatingButton
-})
-
--- Основной фрейм
-local MainFrame = safeCreateInstance("ScrollingFrame", {
-    Name = "MainFrame",
-    Size = UDim2.new(0, 300, 0, 400),
-    Position = UDim2.new(0.5, -150, 0.5, -200),
-    BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-    BackgroundTransparency = 0.3,
-    BorderSizePixel = 0,
-    ZIndex = 2,
-    ScrollBarImageTransparency = 1,
-    Parent = ScreenGui
-})
+-- Главный фрейм
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 300, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
+MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MainFrame.BackgroundTransparency = 0.3
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
 
 -- Скругленные углы
-local UICorner = safeCreateInstance("UICorner", {
-    CornerRadius = UDim.new(0, 12),
-    Parent = MainFrame
-})
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
 
--- Внутренняя обводка
-local UIStroke = safeCreateInstance("UIStroke", {
-    Color = Color3.fromRGB(80, 80, 80),
-    Thickness = 1,
-    Transparency = 0.5,
-    Parent = MainFrame
-})
+-- Обводка
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(80, 80, 80)
+UIStroke.Thickness = 1
+UIStroke.Transparency = 0.5
+UIStroke.Parent = MainFrame
 
--- Панель заголовка (для перетаскивания)
-local TitleBar = safeCreateInstance("Frame", {
-    Name = "TitleBar",
-    Size = UDim2.new(1, 0, 0, 35),
-    BackgroundColor3 = Color3.fromRGB(25, 25, 25),
-    BackgroundTransparency = 0.2,
-    BorderSizePixel = 0,
-    ZIndex = 3,
-    Parent = MainFrame
-})
+-- Заголовок
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Size = UDim2.new(1, 0, 0, 35)
+TitleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+TitleBar.BackgroundTransparency = 0.2
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
 
-local TitleCorner = safeCreateInstance("UICorner", {
-    CornerRadius = UDim.new(0, 12),
-    Parent = TitleBar
-})
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 12)
+TitleCorner.Parent = TitleBar
 
-local TitleLabel = safeCreateInstance("TextLabel", {
-    Size = UDim2.new(1, -80, 1, 0),
-    Position = UDim2.new(0, 10, 0, 0),
-    BackgroundTransparency = 1,
-    Text = "Denker Cheat " .. Version,
-    TextColor3 = Color3.fromRGB(255, 255, 255),
-    TextSize = 14,
-    Font = Enum.Font.GothamBold,
-    TextXAlignment = Enum.TextXAlignment.Left,
-    ZIndex = 3,
-    Parent = TitleBar
-})
-
--- Кнопка сворачивания
-local MinimizeButton = safeCreateInstance("TextButton", {
-    Size = UDim2.new(0, 25, 0, 25),
-    Position = UDim2.new(1, -60, 0.5, -12),
-    BackgroundColor3 = Color3.fromRGB(80, 80, 80),
-    BackgroundTransparency = 0.3,
-    Text = "−",
-    TextColor3 = Color3.fromRGB(255, 255, 255),
-    TextSize = 18,
-    Font = Enum.Font.GothamBold,
-    ZIndex = 3,
-    Parent = TitleBar
-})
-
-local MinimizeCorner = safeCreateInstance("UICorner", {
-    CornerRadius = UDim.new(0, 6),
-    Parent = MinimizeButton
-})
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(1, -80, 1, 0)
+TitleLabel.Position = UDim2.new(0, 10, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "Denker Cheat " .. Version
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextSize = 14
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = TitleBar
 
 -- Кнопка закрытия
-local CloseButton = safeCreateInstance("TextButton", {
-    Size = UDim2.new(0, 25, 0, 25),
-    Position = UDim2.new(1, -30, 0.5, -12),
-    BackgroundColor3 = Color3.fromRGB(80, 80, 80),
-    BackgroundTransparency = 0.3,
-    Text = "×",
-    TextColor3 = Color3.fromRGB(255, 255, 255),
-    TextSize = 18,
-    Font = Enum.Font.GothamBold,
-    ZIndex = 3,
-    Parent = TitleBar
-})
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 25, 0, 25)
+CloseButton.Position = UDim2.new(1, -30, 0.5, -12)
+CloseButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+CloseButton.BackgroundTransparency = 0.3
+CloseButton.Text = "×"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 18
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Parent = TitleBar
 
-local CloseCorner = safeCreateInstance("UICorner", {
-    CornerRadius = UDim.new(0, 6),
-    Parent = CloseButton
-})
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 6)
+CloseCorner.Parent = CloseButton
 
--- ScrollingFrame для скроллинга
-local ScrollFrame = safeCreateInstance("ScrollingFrame", {
-    Name = "ScrollFrame",
-    Size = UDim2.new(1, -20, 1, -45),
-    Position = UDim2.new(0, 10, 0, 40),
-    BackgroundTransparency = 1,
-    BorderSizePixel = 0,
-    ScrollBarThickness = 6,
-    ScrollBarImageColor3 = Color3.fromRGB(120, 120, 120),
-    ScrollBarImageTransparency = 0.5,
-    VerticalScrollBarInset = Enum.ScrollBarInset.Always,
-    ZIndex = 3,
-    Parent = MainFrame
-})
+-- Контейнер для кнопок
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Name = "ContentFrame"
+ContentFrame.Size = UDim2.new(1, -20, 1, -45)
+ContentFrame.Position = UDim2.new(0, 10, 0, 40)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.Parent = MainFrame
 
--- Контейнер для всех кнопок внутри ScrollingFrame
-local ContentFrame = safeCreateInstance("Frame", {
-    Name = "ContentFrame",
-    Size = UDim2.new(1, 0, 0, 0),
-    Position = UDim2.new(0, 0, 0, 0),
-    BackgroundTransparency = 1,
-    ZIndex = 3,
-    Parent = ScrollFrame
-})
+-- Функция для создания кнопок
+local function createButton(text, positionY)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, 0, 0, 40)
+    button.Position = UDim2.new(0, 0, 0, positionY)
+    button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    button.BackgroundTransparency = 0.2
+    button.Text = "   " .. text
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextSize = 13
+    button.Font = Enum.Font.Gotham
+    button.TextXAlignment = Enum.TextXAlignment.Left
+    button.Parent = ContentFrame
 
--- Переменные для систем
-local nowe = false
-local speeds = 1
-local tpwalking = false
-local flyExpanded = false
-local speedExpanded = false
-local jumpExpanded = false
-local noclipEnabled = false
-local noclipConnection = nil
-local espEnabled = false
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = button
 
--- Настройки скорости и прыжка
-local minFlySpeed = 1
-local maxFlySpeed = 15
-local currentFlySpeed = 1
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(100, 100, 100)
+    stroke.Thickness = 1
+    stroke.Transparency = 0.3
+    stroke.Parent = button
 
-local minWalkSpeed = 16
-local maxWalkSpeed = 100
-local currentWalkSpeed = 16
-
-local minJumpPower = 50
-local maxJumpPower = 100
-local currentJumpPower = 50
-
--- Функция для обновления размера контента
-local function updateContentSize()
-    if not ContentFrame or not ScrollFrame then return end
-    
-    local totalHeight = 0
-    for _, child in ipairs(ContentFrame:GetChildren()) do
-        if child:IsA("Frame") then
-            totalHeight = totalHeight + child.Size.Y.Offset
-        end
-    end
-
-    ContentFrame.Size = UDim2.new(1, 0, 0, totalHeight)
-    ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, totalHeight)
-end
-
--- Функция для создания раскрывающихся кнопок
-local function createExpandableButton(text, positionY)
-    local buttonContainer = safeCreateInstance("Frame", {
-        Size = UDim2.new(1, 0, 0, 40),
-        Position = UDim2.new(0, 0, 0, positionY),
-        BackgroundTransparency = 1,
-        ZIndex = 3,
-        Parent = ContentFrame
-    })
-
-    local button = safeCreateInstance("TextButton", {
-        Size = UDim2.new(1, 0, 1, 0),
-        Position = UDim2.new(0, 0, 0, 0),
-        BackgroundColor3 = Color3.fromRGB(60, 60, 60),
-        BackgroundTransparency = 0.2,
-        Text = "   " .. text,
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        TextSize = 13,
-        Font = Enum.Font.Gotham,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        ZIndex = 3,
-        Parent = buttonContainer
-    })
-
-    local corner = safeCreateInstance("UICorner", {
-        CornerRadius = UDim.new(0, 8),
-        Parent = button
-    })
-
-    local stroke = safeCreateInstance("UIStroke", {
-        Color = Color3.fromRGB(100, 100, 100),
-        Thickness = 1,
-        Transparency = 0.3,
-        Parent = button
-    })
-
-    return buttonContainer, button
-end
-
--- Функция для создания простых кнопок
-local function createSimpleButton(text, positionY)
-    local buttonContainer = safeCreateInstance("Frame", {
-        Size = UDim2.new(1, 0, 0, 40),
-        Position = UDim2.new(0, 0, 0, positionY),
-        BackgroundTransparency = 1,
-        ZIndex = 3,
-        Parent = ContentFrame
-    })
-
-    local button = safeCreateInstance("TextButton", {
-        Size = UDim2.new(1, 0, 1, 0),
-        Position = UDim2.new(0, 0, 0, 0),
-        BackgroundColor3 = Color3.fromRGB(60, 60, 60),
-        BackgroundTransparency = 0.2,
-        Text = "   " .. text,
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        TextSize = 13,
-        Font = Enum.Font.Gotham,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        ZIndex = 3,
-        Parent = buttonContainer
-    })
-
-    local corner = safeCreateInstance("UICorner", {
-        CornerRadius = UDim.new(0, 8),
-        Parent = button
-    })
-
-    local stroke = safeCreateInstance("UIStroke", {
-        Color = Color3.fromRGB(100, 100, 100),
-        Thickness = 1,
-        Transparency = 0.3,
-        Parent = button
-    })
-
-    return buttonContainer, button
+    return button
 end
 
 -- Создаем кнопки
-local FlyButtonContainer, FlyButton = createExpandableButton("🛸 Fly System", 0)
-local ESPButtonContainer, ESPButton = createSimpleButton("🎯 ESP: Disabled", 45)
-local NoclipButtonContainer, NoclipButton = createSimpleButton("🚫 Noclip: Disabled", 90)
-local SpeedButtonContainer, SpeedButton = createSimpleButton("🏃‍♂️ WalkSpeed: 16", 135)
-local JumpButtonContainer, JumpButton = createSimpleButton("🦘 JumpPower: 50", 180)
+local FlyButton = createButton("🛸 Fly System: Disabled", 0)
+local ESPButton = createButton("🎯 ESP: Disabled", 45)
+local NoclipButton = createButton("🚫 Noclip: Disabled", 90)
+local SpeedButton = createButton("🏃‍♂️ WalkSpeed: 16", 135)
+local JumpButton = createButton("🦘 JumpPower: 50", 180)
 
--- Функция для безопасной анимации кнопок
-local function safeAnimateButton(button)
-    if not button or button:GetAttribute("Animating") then return end
-    button:SetAttribute("Animating", true)
+-- Переменные
+local flyEnabled = false
+local espEnabled = false
+local noclipEnabled = false
+local noclipConnection = nil
+local currentWalkSpeed = 16
+local currentJumpPower = 50
 
+-- Функция для анимации кнопок
+local function animateButton(button)
     local originalSize = button.Size
-    local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
-    local shrinkTween = safeTween(button, tweenInfo, {Size = originalSize - UDim2.new(0, 3, 0, 3)})
-    if shrinkTween then
-        shrinkTween.Completed:Connect(function()
-            local growTween = safeTween(button, tweenInfo, {Size = originalSize})
-            if growTween then
-                growTween.Completed:Connect(function()
-                    button:SetAttribute("Animating", false)
-                end)
-            else
-                button:SetAttribute("Animating", false)
-            end
-        end)
-    else
-        button:SetAttribute("Animating", false)
-    end
+    button.Size = originalSize - UDim2.new(0, 3, 0, 3)
+    wait(0.1)
+    button.Size = originalSize
 end
 
--- Функция для обновления статуса ESP
-local function updateESPStatus()
-    if not ESPButton then return end
-    
+-- Функция обновления статусов
+local function updateButtonStatus()
+    if flyEnabled then
+        FlyButton.Text = "   🛸 Fly System: ✅ Enabled"
+        FlyButton.TextColor3 = Color3.fromRGB(100, 255, 100)
+    else
+        FlyButton.Text = "   🛸 Fly System: ❌ Disabled"
+        FlyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+
     if espEnabled then
         ESPButton.Text = "   🎯 ESP: ✅ Enabled"
         ESPButton.TextColor3 = Color3.fromRGB(100, 255, 100)
     else
         ESPButton.Text = "   🎯 ESP: ❌ Disabled"
-        ESPButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+        ESPButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     end
-end
 
--- Функция для обновления статуса Noclip
-local function updateNoclipStatus()
-    if not NoclipButton then return end
-    
     if noclipEnabled then
         NoclipButton.Text = "   🚫 Noclip: ✅ Enabled"
         NoclipButton.TextColor3 = Color3.fromRGB(100, 255, 100)
     else
         NoclipButton.Text = "   🚫 Noclip: ❌ Disabled"
-        NoclipButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+        NoclipButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+
+    SpeedButton.Text = "   🏃‍♂️ WalkSpeed: " .. currentWalkSpeed
+    JumpButton.Text = "   🦘 JumpPower: " .. currentJumpPower
+end
+
+-- Функция переключения полета
+local function toggleFly()
+    animateButton(FlyButton)
+    flyEnabled = not flyEnabled
+    updateButtonStatus()
+    
+    -- Простая реализация полета
+    if flyEnabled then
+        -- Включить полет
+    else
+        -- Выключить полет
     end
 end
 
--- Функция для обновления скорости ходьбы
-local function updateWalkSpeed(newSpeed)
-    currentWalkSpeed = math.clamp(newSpeed, minWalkSpeed, maxWalkSpeed)
-    
-    if SpeedButton then
-        SpeedButton.Text = "   🏃‍♂️ WalkSpeed: " .. currentWalkSpeed
-    end
+-- Функция переключения ESP
+local function toggleESP()
+    animateButton(ESPButton)
+    espEnabled = not espEnabled
+    updateButtonStatus()
+end
 
+-- Функция переключения Noclip
+local function toggleNoclip()
+    animateButton(NoclipButton)
+    noclipEnabled = not noclipEnabled
+    updateButtonStatus()
+
+    if noclipEnabled then
+        noclipConnection = game:GetService("RunService").Stepped:Connect(function()
+            if not noclipEnabled then
+                noclipConnection:Disconnect()
+                return
+            end
+            
+            local character = player.Character
+            if character then
+                for _, part in pairs(character:GetChildren()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+    else
+        if noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
+        end
+        
+        -- Восстанавливаем коллизии
+        local character = player.Character
+        if character then
+            for _, part in pairs(character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
+            end
+        end
+    end
+end
+
+-- Функция изменения скорости
+local function changeSpeed()
+    animateButton(SpeedButton)
+    currentWalkSpeed = currentWalkSpeed + 10
+    if currentWalkSpeed > 100 then
+        currentWalkSpeed = 16
+    end
+    
     local character = player.Character
     if character then
         local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -408,16 +256,18 @@ local function updateWalkSpeed(newSpeed)
             humanoid.WalkSpeed = currentWalkSpeed
         end
     end
+    
+    updateButtonStatus()
 end
 
--- Функция для обновления силы прыжка
-local function updateJumpPower(newJump)
-    currentJumpPower = math.clamp(newJump, minJumpPower, maxJumpPower)
-    
-    if JumpButton then
-        JumpButton.Text = "   🦘 JumpPower: " .. currentJumpPower
+-- Функция изменения прыжка
+local function changeJump()
+    animateButton(JumpButton)
+    currentJumpPower = currentJumpPower + 10
+    if currentJumpPower > 100 then
+        currentJumpPower = 50
     end
-
+    
     local character = player.Character
     if character then
         local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -425,316 +275,55 @@ local function updateJumpPower(newJump)
             humanoid.JumpPower = currentJumpPower
         end
     end
-end
-
--- Функция для переключения ESP
-local function toggleESP()
-    safeAnimateButton(ESPButton)
-    espEnabled = not espEnabled
-    updateESPStatus()
-end
-
--- Функция для переключения Noclip
-local function toggleNoclip()
-    safeAnimateButton(NoclipButton)
-
-    if not noclipEnabled then
-        -- Включаем Noclip
-        noclipEnabled = true
-        updateNoclipStatus()
-
-        noclipConnection = RunService.Stepped:Connect(function()
-            if not noclipEnabled then
-                if noclipConnection then
-                    noclipConnection:Disconnect()
-                end
-                return
-            end
-
-            local character = player.Character
-            if character then
-                for _, child in pairs(character:GetChildren()) do
-                    if child:IsA("BasePart") then
-                        child.CanCollide = false
-                    end
-                end
-            end
-        end)
-    else
-        -- Выключаем Noclip
-        noclipEnabled = false
-        updateNoclipStatus()
-
-        if noclipConnection then
-            noclipConnection:Disconnect()
-            noclipConnection = nil
-        end
-
-        -- Восстанавливаем коллизии
-        local character = player.Character
-        if character then
-            for _, child in pairs(character:GetChildren()) do
-                if child:IsA("BasePart") then
-                    child.CanCollide = true
-                end
-            end
-        end
-    end
-end
-
--- Функция для переключения полета
-local function toggleFly()
-    safeAnimateButton(FlyButton)
     
-    local speaker = game:GetService("Players").LocalPlayer
-
-    if nowe == false then
-        nowe = true
-        if FlyButton then
-            FlyButton.Text = "   🛸 Fly System: ✅ Enabled"
-            FlyButton.TextColor3 = Color3.fromRGB(100, 255, 100)
-        end
-
-        for i = 1, speeds do
-            spawn(function()
-                local hb = game:GetService("RunService").Heartbeat	
-                tpwalking = true
-                local chr = game.Players.LocalPlayer.Character
-                if not chr then return end
-                local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
-                while tpwalking and hb:Wait() and chr and hum and hum.Parent do
-                    if hum.MoveDirection.Magnitude > 0 then
-                        chr:TranslateBy(hum.MoveDirection)
-                    end
-                end
-            end)
-        end
-
-        local animate = player.Character:FindFirstChild("Animate")
-        if animate then
-            animate.Disabled = true
-        end
-
-    else 
-        nowe = false
-        if FlyButton then
-            FlyButton.Text = "   🛸 Fly System: ❌ Disabled"
-            FlyButton.TextColor3 = Color3.fromRGB(255, 100, 100)
-        end
-
-        local animate = player.Character:FindFirstChild("Animate")
-        if animate then
-            animate.Disabled = false
-        end
-        tpwalking = false
-    end
+    updateButtonStatus()
 end
 
--- Функция для настройки кнопок
-local function setupButton(button, callback)
-    if button and callback then
-        button.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                pcall(callback)
-            end
-        end)
+-- Назначаем обработчики
+FlyButton.MouseButton1Click:Connect(toggleFly)
+ESPButton.MouseButton1Click:Connect(toggleESP)
+NoclipButton.MouseButton1Click:Connect(toggleNoclip)
+SpeedButton.MouseButton1Click:Connect(changeSpeed)
+JumpButton.MouseButton1Click:Connect(changeJump)
+
+CloseButton.MouseButton1Click:Connect(function()
+    animateButton(CloseButton)
+    ScreenGui:Destroy()
+end)
+
+-- Перетаскивание окна
+local dragging = false
+local dragStart, startPos
+
+TitleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
     end
-end
+end)
 
--- Настройка перетаскивания окна
-local function setupWindowDrag()
-    local dragging = false
-    local dragInput, dragStart, startPos
-
-    local function update(input)
+TitleBar.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
         local delta = input.Position - dragStart
         MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
-
-    if TitleBar then
-        TitleBar.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                dragging = true
-                dragStart = input.Position
-                startPos = MainFrame.Position
-
-                input.Changed:Connect(function()
-                    if input.UserInputState == Enum.UserInputState.End then
-                        dragging = false
-                    end
-                end)
-            end
-        end)
-
-        TitleBar.InputChanged:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-                dragInput = input
-            end
-        end)
-    end
-
-    if UserInputService then
-        UserInputService.InputChanged:Connect(function(input)
-            if input == dragInput and dragging then
-                update(input)
-            end
-        end)
-    end
-end
-
--- Настройка перетаскивания плавающей кнопки
-local function setupFloatingButtonDrag()
-    local dragging = false
-    local dragInput, dragStart, startPos
-    local clickTime = 0
-
-    local function update(input)
-        local delta = input.Position - dragStart
-        FloatingButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-
-    if FloatingButton then
-        FloatingButton.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                dragging = true
-                dragStart = input.Position
-                startPos = FloatingButton.Position
-                clickTime = tick()
-
-                input.Changed:Connect(function()
-                    if input.UserInputState == Enum.UserInputState.End then
-                        dragging = false
-                        
-                        -- Если был короткий клик - открываем окно
-                        if tick() - clickTime < 0.3 then
-                            maximizeWindow()
-                        end
-                    end
-                end)
-            end
-        end)
-
-        FloatingButton.InputChanged:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-                dragInput = input
-            end
-        end)
-    end
-
-    if UserInputService then
-        UserInputService.InputChanged:Connect(function(input)
-            if input == dragInput and dragging then
-                update(input)
-            end
-        end)
-    end
-end
-
--- Функции сворачивания/разворачивания
-local function minimizeWindow()
-    safeAnimateButton(MinimizeButton)
-    
-    local currentPosition = MainFrame.Position
-    
-    local tween = safeTween(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0, 0, 0, 0),
-        Position = UDim2.new(0.5, 0, 0.5, 0),
-        BackgroundTransparency = 1
-    })
-    
-    if tween then
-        tween.Completed:Connect(function()
-            MainFrame.Visible = false
-            if FloatingButton then
-                FloatingButton.Position = currentPosition
-                FloatingButton.Visible = true
-            end
-        end)
-    end
-end
-
-local function maximizeWindow()
-    safeAnimateButton(FloatingButton)
-    
-    if FloatingButton then
-        FloatingButton.Visible = false
-    end
-    
-    if MainFrame then
-        MainFrame.Visible = true
-        MainFrame.Size = UDim2.new(0, 0, 0, 0)
-        if FloatingButton then
-            MainFrame.Position = FloatingButton.Position
-        end
-        MainFrame.BackgroundTransparency = 1
-        
-        local tween = safeTween(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 300, 0, 400),
-            Position = UDim2.new(0.5, -150, 0.5, -200),
-            BackgroundTransparency = 0.3
-        })
-    end
-end
-
--- Настройка всех кнопок
-setupButton(FlyButton, toggleFly)
-setupButton(ESPButton, toggleESP)
-setupButton(NoclipButton, toggleNoclip)
-setupButton(SpeedButton, function()
-    safeAnimateButton(SpeedButton)
-    updateWalkSpeed(currentWalkSpeed + 10)
-    if currentWalkSpeed >= maxWalkSpeed then
-        updateWalkSpeed(minWalkSpeed)
-    end
 end)
 
-setupButton(JumpButton, function()
-    safeAnimateButton(JumpButton)
-    updateJumpPower(currentJumpPower + 10)
-    if currentJumpPower >= maxJumpPower then
-        updateJumpPower(minJumpPower)
+TitleBar.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
     end
 end)
-
-setupButton(MinimizeButton, minimizeWindow)
-setupButton(CloseButton, function()
-    safeAnimateButton(CloseButton)
-    if ScreenGui then
-        ScreenGui:Destroy()
-    end
-end)
-
--- Настройка перетаскивания
-setupWindowDrag()
-setupFloatingButtonDrag()
 
 -- Инициализация
-updateWalkSpeed(16)
-updateJumpPower(50)
-updateESPStatus()
-updateNoclipStatus()
-updateContentSize()
+updateButtonStatus()
 
--- Анимация открытия
-if MainFrame then
-    MainFrame.Size = UDim2.new(0, 0, 0, 0)
-    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-    MainFrame.BackgroundTransparency = 1
+-- Уведомление
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Denker Cheat " .. Version,
+    Text = "GUI loaded successfully!",
+    Duration = 3,
+})
 
-    local openTween = safeTween(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0, 300, 0, 400),
-        Position = UDim2.new(0.5, -150, 0.5, -200),
-        BackgroundTransparency = 0.3
-    })
-end
-
--- Уведомление о загрузке
-pcall(function()
-    game:GetService("StarterGui"):SetCore("SendNotification", { 
-        Title = "Denker Cheat "..Version,
-        Text = "Denker Cheat loaded successfully!",
-        Duration = 3,
-    })
-end)
-
-print("🎮 Denker Cheat " .. Version .. " loaded successfully!")
+print("✅ Denker Cheat " .. Version .. " GUI loaded!")
