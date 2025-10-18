@@ -9,9 +9,6 @@ local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
 
--- UI MODULE
-local DenkerUI = {}
-
 -- Create main GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "DenkerChetGUI"
@@ -22,8 +19,8 @@ ScreenGui.ResetOnSpawn = false
 -- Main frame with semi-transparent background
 local MainFrame = Instance.new("ScrollingFrame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 300, 0, 250)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -125)
+MainFrame.Size = UDim2.new(0, 300, 0, 350) -- Increased height for new buttons
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -175)
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MainFrame.BackgroundTransparency = 0.3
 MainFrame.BorderSizePixel = 0
@@ -124,7 +121,7 @@ ContentFrame.ZIndex = 3
 ContentFrame.Parent = ScrollFrame
 
 -- Function to update ContentFrame size and CanvasSize
-function DenkerUI.updateContentSize()
+local function updateContentSize()
 	local totalHeight = 0
 
 	-- Calculate total height of all elements
@@ -140,7 +137,7 @@ function DenkerUI.updateContentSize()
 end
 
 -- Function to create dark gray buttons with text on left and ImageLabel on right
-function DenkerUI.createExpandableButton(text, positionY)
+local function createExpandableButton(text, positionY)
 	local buttonContainer = Instance.new("Frame")
 	buttonContainer.Size = UDim2.new(1, 0, 0, 40)
 	buttonContainer.Position = UDim2.new(0, 0, 0, positionY)
@@ -206,8 +203,8 @@ function DenkerUI.createExpandableButton(text, positionY)
 end
 
 -- Function to create Fly button with dropdown content
-function DenkerUI.createFlyButton(positionY)
-	local buttonContainer, button, expandFrame, imageLabel = DenkerUI.createExpandableButton("🛸 Fly System", positionY)
+local function createFlyButton(positionY)
+	local buttonContainer, button, expandFrame, imageLabel = createExpandableButton("🛸 Fly System", positionY)
 
 	-- Fly toggle button
 	local flyToggleButton = Instance.new("TextButton")
@@ -335,8 +332,8 @@ function DenkerUI.createFlyButton(positionY)
 	return buttonContainer, button, expandFrame, imageLabel, flyToggleButton, flyStatusLabel, speedLabel, sliderFill, sliderButton, minusButton, plusButton
 end
 
--- Function to create simple ESP button (without dropdown)
-function DenkerUI.createSimpleESPButton(positionY)
+-- Function to create simple button
+local function createSimpleButton(text, positionY)
 	local buttonContainer = Instance.new("Frame")
 	buttonContainer.Size = UDim2.new(1, 0, 0, 40)
 	buttonContainer.Position = UDim2.new(0, 0, 0, positionY)
@@ -349,7 +346,7 @@ function DenkerUI.createSimpleESPButton(positionY)
 	button.Position = UDim2.new(0, 0, 0, 0)
 	button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 	button.BackgroundTransparency = 0.2
-	button.Text = "   🎯 ESP: Disabled"
+	button.Text = "   " .. text
 	button.TextColor3 = Color3.fromRGB(255, 255, 255)
 	button.TextSize = 13
 	button.Font = Enum.Font.Gotham
@@ -370,178 +367,12 @@ function DenkerUI.createSimpleESPButton(positionY)
 	return buttonContainer, button
 end
 
--- Function to create simple Noclip button (without dropdown)
-function DenkerUI.createSimpleNoclipButton(positionY)
-	local buttonContainer = Instance.new("Frame")
-	buttonContainer.Size = UDim2.new(1, 0, 0, 40)
-	buttonContainer.Position = UDim2.new(0, 0, 0, positionY)
-	buttonContainer.BackgroundTransparency = 1
-	buttonContainer.ZIndex = 3
-	buttonContainer.Parent = ContentFrame
-
-	local button = Instance.new("TextButton")
-	button.Size = UDim2.new(1, 0, 1, 0)
-	button.Position = UDim2.new(0, 0, 0, 0)
-	button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-	button.BackgroundTransparency = 0.2
-	button.Text = "   🚫 Noclip: Disabled"
-	button.TextColor3 = Color3.fromRGB(255, 255, 255)
-	button.TextSize = 13
-	button.Font = Enum.Font.Gotham
-	button.TextXAlignment = Enum.TextXAlignment.Left
-	button.ZIndex = 3
-	button.Parent = buttonContainer
-
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 8)
-	corner.Parent = button
-
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = Color3.fromRGB(100, 100, 100)
-	stroke.Thickness = 1
-	stroke.Transparency = 0.3
-	stroke.Parent = button
-
-	return buttonContainer, button
-end
-
--- Function for fixed button animation
-function DenkerUI.safeAnimateButton(button)
-	if button:GetAttribute("Animating") then return end
-	button:SetAttribute("Animating", true)
-
-	local originalSize = button.Size
-	local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
-	local shrinkTween = TweenService:Create(button, tweenInfo, {Size = originalSize - UDim2.new(0, 3, 0, 3)})
-	local growTween = TweenService:Create(button, tweenInfo, {Size = originalSize})
-
-	shrinkTween:Play()
-	shrinkTween.Completed:Connect(function()
-		growTween:Play()
-		growTween.Completed:Connect(function()
-			button:SetAttribute("Animating", false)
-		end)
-	end)
-end
-
--- Hover animation for dark gray buttons
-function DenkerUI.setupDarkGrayHoverEffects(button)
-	local originalTransparency = button.BackgroundTransparency
-
-	button.MouseEnter:Connect(function()
-		if button:GetAttribute("Animating") then return end
-		local tween = TweenService:Create(button, TweenInfo.new(0.2), {
-			BackgroundColor3 = Color3.fromRGB(80, 80, 80),
-			BackgroundTransparency = originalTransparency - 0.1
-		})
-		tween:Play()
-	end)
-
-	button.MouseLeave:Connect(function()
-		if button:GetAttribute("Animating") then return end
-		local tween = TweenService:Create(button, TweenInfo.new(0.2), {
-			BackgroundColor3 = Color3.fromRGB(60, 60, 60),
-			BackgroundTransparency = originalTransparency
-		})
-		tween:Play()
-	end)
-end
-
--- Function for icon animation (rotation)
-function DenkerUI.animateIcon(imageLabel, expand)
-	local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
-	if expand then
-		local tween = TweenService:Create(imageLabel, tweenInfo, {
-			Rotation = 180
-		})
-		tween:Play()
-	else
-		local tween = TweenService:Create(imageLabel, tweenInfo, {
-			Rotation = 0
-		})
-		tween:Play()
-	end
-end
-
--- WINDOW DRAGGING FUNCTION
-function DenkerUI.setupWindowDrag(titleBar, mainFrame)
-	local dragging = false
-	local dragInput, dragStart, startPos
-
-	local function update(input)
-		local delta = input.Position - dragStart
-		mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-	end
-
-	titleBar.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			dragStart = input.Position
-			startPos = mainFrame.Position
-
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragging = false
-				end
-			end)
-		end
-	end)
-
-	titleBar.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-			dragInput = input
-		end
-	end)
-
-	UserInputService.InputChanged:Connect(function(input)
-		if input == dragInput and dragging then
-			update(input)
-		end
-	end)
-end
-
--- Opening animation
-function DenkerUI.show()
-	MainFrame.Size = UDim2.new(0, 0, 0, 0)
-	MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-	MainFrame.BackgroundTransparency = 1
-
-	local openTween = TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-		Size = UDim2.new(0, 300, 0, 250),
-		Position = UDim2.new(0.5, -150, 0.5, -125),
-		BackgroundTransparency = 0.3
-	})
-	openTween:Play()
-end
-
-function DenkerUI.close()
-	local tween = TweenService:Create(MainFrame, TweenInfo.new(0.3), {
-		Size = UDim2.new(0, 0, 0, 0),
-		Position = UDim2.new(0.5, 0, 0.5, 0),
-		BackgroundTransparency = 1
-	})
-	tween:Play()
-
-	tween.Completed:Wait()
-	ScreenGui:Destroy()
-end
-
--- Export UI elements for functionality
-DenkerUI.MainFrame = MainFrame
-DenkerUI.TitleBar = TitleBar
-DenkerUI.CloseButton = CloseButton
-DenkerUI.ContentFrame = ContentFrame
-DenkerUI.ScrollFrame = ScrollFrame
-
--- LOGIC MODULE
-local DenkerLogic = {}
-
--- Create UI elements
-local FlyButtonContainer, FlyButton, FlyExpandFrame, FlyImageLabel, FlyToggleButton, FlyStatusLabel, SpeedLabel, SpeedSliderFill, SpeedSliderButton, SpeedMinusButton, SpeedPlusButton = DenkerUI.createFlyButton(0)
-local ESPButtonContainer, ESPButton = DenkerUI.createSimpleESPButton(45)
-local NoclipButtonContainer, NoclipButton = DenkerUI.createSimpleNoclipButton(90)
+-- Create buttons
+local FlyButtonContainer, FlyButton, FlyExpandFrame, FlyImageLabel, FlyToggleButton, FlyStatusLabel, SpeedLabel, SpeedSliderFill, SpeedSliderButton, SpeedMinusButton, SpeedPlusButton = createFlyButton(0)
+local ESPButtonContainer, ESPButton = createSimpleButton("🎯 ESP: Disabled", 45)
+local NoclipButtonContainer, NoclipButton = createSimpleButton("🚫 Noclip: Disabled", 90)
+local SpeedButtonContainer, SpeedButton = createSimpleButton("🏃‍♂️ WalkSpeed: 16", 135)
+local JumpButtonContainer, JumpButton = createSimpleButton("🦘 JumpPower: 50", 180)
 
 -- Variables for systems
 local nowe = false
@@ -556,10 +387,13 @@ local espNameTags = {}
 local espHighlights = {}
 local espBeams = {}
 
--- Speed slider settings
-local minSpeed = 1
-local maxSpeed = 15
-local currentSpeed = 1
+-- Speed and Jump settings
+local minSpeed = 16
+local maxSpeed = 350
+local currentSpeed = 16
+local minJump = 50
+local maxJump = 285
+local currentJump = 50
 
 -- Function to move buttons when opening/closing menus
 local function updateButtonPositions()
@@ -582,9 +416,77 @@ local function updateButtonPositions()
 
 	-- Noclip button
 	NoclipButtonContainer.Position = UDim2.new(0, 0, 0, currentY)
+	currentY = currentY + 40 + 5
+
+	-- Speed button
+	SpeedButtonContainer.Position = UDim2.new(0, 0, 0, currentY)
+	currentY = currentY + 40 + 5
+
+	-- Jump button
+	JumpButtonContainer.Position = UDim2.new(0, 0, 0, currentY)
 
 	-- Update content size
-	DenkerUI.updateContentSize()
+	updateContentSize()
+end
+
+-- Function for fixed button animation
+local function safeAnimateButton(button)
+	if button:GetAttribute("Animating") then return end
+	button:SetAttribute("Animating", true)
+
+	local originalSize = button.Size
+	local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+	local shrinkTween = TweenService:Create(button, tweenInfo, {Size = originalSize - UDim2.new(0, 3, 0, 3)})
+	local growTween = TweenService:Create(button, tweenInfo, {Size = originalSize})
+
+	shrinkTween:Play()
+	shrinkTween.Completed:Connect(function()
+		growTween:Play()
+		growTween.Completed:Connect(function()
+			button:SetAttribute("Animating", false)
+		end)
+	end)
+end
+
+-- Hover animation for dark gray buttons
+local function setupDarkGrayHoverEffects(button)
+	local originalTransparency = button.BackgroundTransparency
+
+	button.MouseEnter:Connect(function()
+		if button:GetAttribute("Animating") then return end
+		local tween = TweenService:Create(button, TweenInfo.new(0.2), {
+			BackgroundColor3 = Color3.fromRGB(80, 80, 80),
+			BackgroundTransparency = originalTransparency - 0.1
+		})
+		tween:Play()
+	end)
+
+	button.MouseLeave:Connect(function()
+		if button:GetAttribute("Animating") then return end
+		local tween = TweenService:Create(button, TweenInfo.new(0.2), {
+			BackgroundColor3 = Color3.fromRGB(60, 60, 60),
+			BackgroundTransparency = originalTransparency
+		})
+		tween:Play()
+	end)
+end
+
+-- Function for icon animation (rotation)
+local function animateIcon(imageLabel, expand)
+	local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+	if expand then
+		local tween = TweenService:Create(imageLabel, tweenInfo, {
+			Rotation = 180
+		})
+		tween:Play()
+	else
+		local tween = TweenService:Create(imageLabel, tweenInfo, {
+			Rotation = 0
+		})
+		tween:Play()
+	end
 end
 
 -- Function to update Fly status
@@ -619,6 +521,30 @@ local function updateNoclipStatus()
 	else
 		NoclipButton.Text = "   🚫 Noclip: ❌ Disabled"
 		NoclipButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+	end
+end
+
+-- Function to update WalkSpeed
+local function updateWalkSpeed()
+	local character = player.Character
+	if character then
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.WalkSpeed = currentSpeed
+			SpeedButton.Text = "   🏃‍♂️ WalkSpeed: " .. currentSpeed
+		end
+	end
+end
+
+-- Function to update JumpPower
+local function updateJumpPower()
+	local character = player.Character
+	if character then
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.JumpPower = currentJump
+			JumpButton.Text = "   🦘 JumpPower: " .. currentJump
+		end
 	end
 end
 
@@ -660,11 +586,11 @@ end
 
 -- Function for Fly expand/collapse animation
 local function toggleFlyExpand()
-	DenkerUI.safeAnimateButton(FlyButton)
+	safeAnimateButton(FlyButton)
 
 	if flyExpanded then
 		-- Collapse
-		DenkerUI.animateIcon(FlyImageLabel, false)
+		animateIcon(FlyImageLabel, false)
 
 		local tween = TweenService:Create(FlyExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 			Size = UDim2.new(1, 0, 0, 0)
@@ -679,7 +605,7 @@ local function toggleFlyExpand()
 	else
 		-- Expand
 		FlyExpandFrame.Visible = true
-		DenkerUI.animateIcon(FlyImageLabel, true)
+		animateIcon(FlyImageLabel, true)
 
 		local tween = TweenService:Create(FlyExpandFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 			Size = UDim2.new(1, 0, 0, 110)
@@ -693,7 +619,7 @@ local function toggleFlyExpand()
 	end
 end
 
--- WORKING FLY SYSTEM
+-- WORKING FLY SYSTEM FROM YOUR SCRIPT
 local function toggleFly()
 	local speaker = game:GetService("Players").LocalPlayer
 
@@ -911,7 +837,7 @@ UserInputService.InputEnded:Connect(handleInputEnd)
 
 -- NOCLIP SYSTEM
 local function toggleNoclip()
-	DenkerUI.safeAnimateButton(NoclipButton)
+	safeAnimateButton(NoclipButton)
 
 	if not noclipEnabled then
 		-- Enable Noclip
@@ -953,6 +879,46 @@ local function toggleNoclip()
 			end
 		end
 	end
+end
+
+-- WALKSPEED SYSTEM
+local function toggleWalkSpeed()
+	safeAnimateButton(SpeedButton)
+
+	-- Cycle through speed values
+	if currentSpeed == minSpeed then
+		currentSpeed = 50
+	elseif currentSpeed == 50 then
+		currentSpeed = 100
+	elseif currentSpeed == 100 then
+		currentSpeed = 200
+	elseif currentSpeed == 200 then
+		currentSpeed = maxSpeed
+	else
+		currentSpeed = minSpeed
+	end
+
+	updateWalkSpeed()
+end
+
+-- JUMPPOWER SYSTEM
+local function toggleJumpPower()
+	safeAnimateButton(JumpButton)
+
+	-- Cycle through jump values
+	if currentJump == minJump then
+		currentJump = 100
+	elseif currentJump == 100 then
+		currentJump = 150
+	elseif currentJump == 150 then
+		currentJump = 200
+	elseif currentJump == 200 then
+		currentJump = maxJump
+	else
+		currentJump = minJump
+	end
+
+	updateJumpPower()
 end
 
 -- RAINBOW ESP SYSTEM
@@ -1109,7 +1075,7 @@ local function removeESP(player)
 end
 
 local function toggleESP()
-	DenkerUI.safeAnimateButton(ESPButton)
+	safeAnimateButton(ESPButton)
 
 	if not espEnabled then
 		-- Enable ESP
@@ -1217,13 +1183,50 @@ local function setupSpeedSlider()
 
 	-- Plus/Minus button functionality
 	SpeedPlusButton.MouseButton1Click:Connect(function()
-		DenkerUI.safeAnimateButton(SpeedPlusButton)
+		safeAnimateButton(SpeedPlusButton)
 		updateSpeed(currentSpeed + 1)
 	end)
 
 	SpeedMinusButton.MouseButton1Click:Connect(function()
-		DenkerUI.safeAnimateButton(SpeedMinusButton)
+		safeAnimateButton(SpeedMinusButton)
 		updateSpeed(currentSpeed - 1)
+	end)
+end
+
+-- WINDOW DRAGGING FUNCTION
+local function setupWindowDrag()
+	local dragging = false
+	local dragInput, dragStart, startPos
+
+	local function update(input)
+		local delta = input.Position - dragStart
+		MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+
+	TitleBar.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = MainFrame.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+
+	TitleBar.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			update(input)
+		end
 	end)
 end
 
@@ -1236,51 +1239,69 @@ local function setupButton(button, callback)
 	end)
 end
 
--- INITIALIZATION
-local function initialize()
-	-- Set up all buttons
-	setupButton(FlyButton, toggleFlyExpand)
-	setupButton(FlyToggleButton, toggleFly)
-	setupButton(ESPButton, toggleESP)
-	setupButton(NoclipButton, toggleNoclip)
+-- Set up all buttons
+setupButton(FlyButton, toggleFlyExpand)
+setupButton(FlyToggleButton, toggleFly)
+setupButton(ESPButton, toggleESP)
+setupButton(NoclipButton, toggleNoclip)
+setupButton(SpeedButton, toggleWalkSpeed)
+setupButton(JumpButton, toggleJumpPower)
 
-	setupButton(DenkerUI.CloseButton, function()
-		DenkerUI.safeAnimateButton(DenkerUI.CloseButton)
-		DenkerUI.close()
-	end)
+setupButton(CloseButton, function()
+	safeAnimateButton(CloseButton)
 
-	-- Apply hover effects
-	DenkerUI.setupDarkGrayHoverEffects(FlyButton)
-	DenkerUI.setupDarkGrayHoverEffects(DenkerUI.CloseButton)
-	DenkerUI.setupDarkGrayHoverEffects(FlyToggleButton)
-	DenkerUI.setupDarkGrayHoverEffects(ESPButton)
-	DenkerUI.setupDarkGrayHoverEffects(NoclipButton)
-	DenkerUI.setupDarkGrayHoverEffects(SpeedMinusButton)
-	DenkerUI.setupDarkGrayHoverEffects(SpeedPlusButton)
-
-	-- Set up window dragging and speed slider
-	DenkerUI.setupWindowDrag(DenkerUI.TitleBar, DenkerUI.MainFrame)
-	setupSpeedSlider()
-
-	-- Initialize speed and statuses
-	updateSpeed(1)
-	updateNoclipStatus()
-
-	-- Update content size after creating all elements
-	DenkerUI.updateContentSize()
-
-	-- Show UI with opening animation
-	DenkerUI.show()
-
-	game:GetService("StarterGui"):SetCore("SendNotification", { 
-		Title = "Denker Cheat "..Version;
-		Text = "Denker Cheat loaded!";
-		Icon = "rbxthumb://type=Asset&id=85901190532963&w=150&h=150";
-		Duration = 5;
+	local tween = TweenService:Create(MainFrame, TweenInfo.new(0.3), {
+		Size = UDim2.new(0, 0, 0, 0),
+		Position = UDim2.new(0.5, 0, 0.5, 0),
+		BackgroundTransparency = 1
 	})
+	tween:Play()
 
-	print("🎮 Denker Cheat " .. Version .. " loaded!")
-end
+	tween.Completed:Wait()
+	ScreenGui:Destroy()
+end)
 
--- Start the cheat
-initialize()
+-- Apply hover effects
+setupDarkGrayHoverEffects(FlyButton)
+setupDarkGrayHoverEffects(CloseButton)
+setupDarkGrayHoverEffects(FlyToggleButton)
+setupDarkGrayHoverEffects(ESPButton)
+setupDarkGrayHoverEffects(NoclipButton)
+setupDarkGrayHoverEffects(SpeedButton)
+setupDarkGrayHoverEffects(JumpButton)
+setupDarkGrayHoverEffects(SpeedMinusButton)
+setupDarkGrayHoverEffects(SpeedPlusButton)
+
+-- Set up window dragging and speed slider
+setupWindowDrag()
+setupSpeedSlider()
+
+-- Initialize speed and statuses
+updateSpeed(1)
+updateNoclipStatus()
+updateWalkSpeed()
+updateJumpPower()
+
+-- Update content size after creating all elements
+updateContentSize()
+
+-- Opening animation
+MainFrame.Size = UDim2.new(0, 0, 0, 0)
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+MainFrame.BackgroundTransparency = 1
+
+local openTween = TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+	Size = UDim2.new(0, 300, 0, 350),
+	Position = UDim2.new(0.5, -150, 0.5, -175),
+	BackgroundTransparency = 0.3
+})
+openTween:Play()
+
+game:GetService("StarterGui"):SetCore("SendNotification", { 
+	Title = "Denker Cheat "..Version;
+	Text = "Denker Cheat loaded!";
+	Icon = "rbxthumb://type=Asset&id=85901190532963&w=150&h=150";
+	Duration = 5;
+})
+
+print("🎮 Denker Cheat " .. Version .. " loaded!")
