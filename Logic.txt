@@ -1108,19 +1108,6 @@ local function setupFloatingButtonDrag()
 	end)
 end
 
-	FloatingButton.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-			dragInput = input
-		end
-	end)
-
-	UserInputService.InputChanged:Connect(function(input)
-		if input == dragInput and dragging then
-			update(input)
-		end
-	end)
-end
-
 -- WORKING FLY SYSTEM
 local function toggleFly()
 	local speaker = game:GetService("Players").LocalPlayer
@@ -1740,7 +1727,7 @@ setupButton(NoclipButton, toggleNoclip)
 setupButton(SpeedButton, toggleSpeedExpand)
 setupButton(JumpButton, toggleJumpExpand)
 setupButton(MinimizeButton, minimizeWindow)
-setupButton(FloatingButton, maximizeWindow)
+-- setupButton(FloatingButton, maximizeWindow)  -- УДАЛЕНО, теперь открытие по короткому клику
 
 setupButton(CloseButton, function()
 	safeAnimateButton(CloseButton)
