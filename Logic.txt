@@ -1068,6 +1068,7 @@ end
 local function setupFloatingButtonDrag()
 	local dragging = false
 	local dragInput, dragStart, startPos
+	local clickTime = 0
 
 	local function update(input)
 		local delta = input.Position - dragStart
@@ -1079,14 +1080,33 @@ local function setupFloatingButtonDrag()
 			dragging = true
 			dragStart = input.Position
 			startPos = FloatingButton.Position
+			clickTime = tick()
 
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then
 					dragging = false
+					
+					-- Если был короткий клик (менее 0.3 секунды) - открываем окно
+					if tick() - clickTime < 0.3 then
+						maximizeWindow()
+					end
 				end
 			end)
 		end
 	end)
+
+	FloatingButton.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			update(input)
+		end
+	end)
+end
 
 	FloatingButton.InputChanged:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
